@@ -77,7 +77,7 @@ export default function Home() {
         {/* Operation Buttons */}
         <div className="grid grid-cols-4 gap-8 mt-16 w-full max-w-xs">
           <button className="text-5xl">+</button>
-          <button className="text-5xl">-</button>
+          <button className="text-5xl">−</button>
           <button className="text-5xl">×</button>
           <button className="text-5xl">÷</button>
         </div>
