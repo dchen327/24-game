@@ -25,7 +25,9 @@ export default function Home() {
   const [selectededNumIdx, setSelectedNumIdx] = useState<number | null>(null);
   const [selectedOpIdx, setSelectedOpIdx] = useState<number | null>(null);
   const [gameHistory, setGameHistory] = useState<GameNum[][]>([]);
+  const [showSolvedModal, setShowSolvedModal] = useState<boolean>(false);
 
+  // Load puzzles
   useEffect(() => {
     // shuffle puzzles initially
     const puzzles = puzzlesImport.map((puzzleSet) =>
@@ -39,16 +41,22 @@ export default function Home() {
     setLoading(false);
   }, []);
 
+  // Display new puzzle
   useEffect(() => {
     if (loading) return;
     const gameNums = puzzles[difficulty][puzzleIdxs[difficulty]];
     setGameNums(shuffle(gameNums));
-    // update idx to be +1 mod len
-    // const newPuzzleIdxs = [...puzzleIdxs];
-    // newPuzzleIdxs[difficulty] =
-    //   (puzzleIdxs[difficulty] + 1) % puzzles[difficulty].length;
-    // setPuzzleIdxs(newPuzzleIdxs);
   }, [difficulty, puzzleIdxs, puzzles, loading]);
+
+  // Check if solved
+  useEffect(() => {
+    if (
+      gameNums.filter((num) => num !== null).length === 1 &&
+      gameNums.some((num) => num?.valueOf() === 24)
+    ) {
+      setShowSolvedModal(true);
+    }
+  }, [gameNums]);
 
   function shuffle<T>(array: T[]): T[] {
     for (let i = array.length - 1; i > 0; i--) {
@@ -59,7 +67,11 @@ export default function Home() {
   }
 
   const handleNumClick = (index: number) => {
-    if (selectededNumIdx !== null && selectedOpIdx !== null) {
+    if (
+      selectededNumIdx !== null &&
+      selectedOpIdx !== null &&
+      index !== selectededNumIdx
+    ) {
       const num1 = gameNums[selectededNumIdx]!;
       const num2 = gameNums[index]!;
       let result: Fraction;
@@ -104,6 +116,18 @@ export default function Home() {
     setGameHistory((prevHistory) => prevHistory.slice(0, -1));
     setSelectedNumIdx(null);
     setSelectedOpIdx(null);
+  };
+
+  const handleNewPuzzleClick = (): void => {
+    setShowSolvedModal(false);
+    // TODO: small chance of randomly picking another difficulty
+    // update idx to be +1 mod len
+    const newPuzzleIdxs = [...puzzleIdxs];
+    newPuzzleIdxs[difficulty] =
+      (puzzleIdxs[difficulty] + 1) % puzzles[difficulty].length;
+    setPuzzleIdxs(newPuzzleIdxs);
+    setSelectedNumIdx(null);
+    setGameHistory([]);
   };
 
   return (
@@ -151,7 +175,10 @@ export default function Home() {
 
       {/* Bottom Toolbar */}
       <div className="flex justify-around items-center py-4 bg-gray-50">
-        <button className="flex flex-col items-center gap-1">
+        <button
+          className="flex flex-col items-center gap-1"
+          onClick={handleNewPuzzleClick}
+        >
           <ArrowLeftRight className="h-6 w-6" />
           <span className="text-xs">New</span>
         </button>
@@ -171,6 +198,21 @@ export default function Home() {
           <span className="text-xs">Undo</span>
         </button>
       </div>
+      {showSolvedModal && (
+        <div className="fixed inset-0 z-10 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-gray-500 opacity-75"
+            onClick={() => handleNewPuzzleClick()}
+          ></div>
+          <div className="bg-white p-8 rounded-lg z-10">
+            <h2 className="text-2xl font-bold mb-4">Congratulations!</h2>
+            <p>You have won the game!</p>
+            <button className="mt-4" onClick={handleNewPuzzleClick}>
+              Play again
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
