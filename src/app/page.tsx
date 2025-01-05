@@ -21,6 +21,9 @@ export default function Home() {
   const difficulties = ["Easy", "Medium", "Hard"];
   const [puzzleIdxs, setPuzzleIdxs] = useState<number[]>([0, 0, 0]);
   const [gameNums, setGameNums] = useState<GameNum[]>([]);
+  const operations: string[] = ["+", "−", "×", "÷"];
+  const [selectededNumIdx, setSelectedNumIdx] = useState<number | null>(null);
+  const [selectedOpIdx, setSelectedOpIdx] = useState<number | null>(null);
 
   useEffect(() => {
     // shuffle puzzles initially
@@ -54,6 +57,44 @@ export default function Home() {
     return array;
   }
 
+  const handleNumClick = (index: number) => {
+    if (selectededNumIdx !== null && selectedOpIdx !== null) {
+      const num1 = gameNums[selectededNumIdx]!;
+      const num2 = gameNums[index]!;
+      let result: Fraction;
+      switch (selectedOpIdx) {
+        case 0:
+          result = num1.add(num2);
+          break;
+        case 1:
+          result = num1.sub(num2);
+          break;
+        case 2:
+          result = num1.mul(num2);
+          break;
+        case 3:
+          result = num1.div(num2);
+          break;
+        default:
+          return;
+      }
+      setSelectedNumIdx(index);
+      setSelectedOpIdx(null);
+      setGameNums((prevNums) => {
+        const newNums = [...prevNums];
+        newNums[index] = result;
+        newNums[selectededNumIdx] = null;
+        return newNums;
+      });
+    } else {
+      setSelectedNumIdx(index);
+    }
+  };
+
+  const handleOpClick = (index: number) => {
+    setSelectedOpIdx(index);
+  };
+
   return (
     <div className="flex flex-col h-screen bg-white">
       {/* Header */}
@@ -67,7 +108,12 @@ export default function Home() {
           {gameNums.map((num, index) => (
             <button
               key={index}
-              className="aspect-square bg-gray-100 rounded-2xl flex items-center justify-center text-7xl font-medium"
+              className={`aspect-square rounded-2xl flex items-center justify-center text-7xl font-medium ${
+                selectededNumIdx === index
+                  ? "bg-blue-100 border-2 border-gray-600"
+                  : "bg-gray-100"
+              }`}
+              onClick={() => handleNumClick(index)}
             >
               {num?.valueOf()}
             </button>
@@ -76,10 +122,19 @@ export default function Home() {
 
         {/* Operation Buttons */}
         <div className="grid grid-cols-4 gap-8 mt-16 w-full max-w-xs">
-          <button className="text-5xl">+</button>
-          <button className="text-5xl">−</button>
-          <button className="text-5xl">×</button>
-          <button className="text-5xl">÷</button>
+          {operations.map((op, index) => (
+            <button
+              key={index}
+              className={`text-5xl p-6 flex items-center justify-center w-16 h-16 ${
+                selectedOpIdx === index
+                  ? "border-2 border-gray-600 rounded-full"
+                  : ""
+              }`}
+              onClick={() => handleOpClick(index)}
+            >
+              {op}
+            </button>
+          ))}
         </div>
       </div>
 
