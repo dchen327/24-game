@@ -18,6 +18,7 @@ export default function Home() {
   const [puzzles, setPuzzles] = useState<Fraction[][][]>([]);
   const [loading, setLoading] = useState<boolean>(true); // for loading puzzles
   const [difficulty, setDifficulty] = useState<number>(0); // 0-2
+  const difficulties = ["Easy", "Medium", "Hard"];
   const [puzzleIdxs, setPuzzleIdxs] = useState<number[]>([0, 0, 0]);
   const [gameNums, setGameNums] = useState<GameNum[]>([]);
 
@@ -57,8 +58,7 @@ export default function Home() {
     <div className="flex flex-col h-screen bg-white">
       {/* Header */}
       <div className="text-center py-4">
-        <h1 className="text-2xl font-medium">Hard</h1>
-        <div className="text-lg">00:05</div>
+        <h1 className="text-2xl font-medium">{difficulties[difficulty]}</h1>
       </div>
 
       {/* Game Grid */}
@@ -67,7 +67,7 @@ export default function Home() {
           {gameNums.map((num, index) => (
             <button
               key={index}
-              className="aspect-square bg-gray-100 rounded-2xl flex items-center justify-center text-4xl font-medium"
+              className="aspect-square bg-gray-100 rounded-2xl flex items-center justify-center text-7xl font-medium"
             >
               {num?.valueOf()}
             </button>
@@ -76,10 +76,10 @@ export default function Home() {
 
         {/* Operation Buttons */}
         <div className="grid grid-cols-4 gap-8 mt-16 w-full max-w-xs">
-          <button className="text-3xl">+</button>
-          <button className="text-3xl">-</button>
-          <button className="text-3xl">×</button>
-          <button className="text-3xl">÷</button>
+          <button className="text-5xl">+</button>
+          <button className="text-5xl">-</button>
+          <button className="text-5xl">×</button>
+          <button className="text-5xl">÷</button>
         </div>
       </div>
 
