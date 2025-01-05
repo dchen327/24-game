@@ -24,6 +24,7 @@ export default function Home() {
   const operations: string[] = ["+", "−", "×", "÷"];
   const [selectededNumIdx, setSelectedNumIdx] = useState<number | null>(null);
   const [selectedOpIdx, setSelectedOpIdx] = useState<number | null>(null);
+  const [gameHistory, setGameHistory] = useState<GameNum[][]>([]);
 
   useEffect(() => {
     // shuffle puzzles initially
@@ -86,6 +87,7 @@ export default function Home() {
         newNums[selectededNumIdx] = null;
         return newNums;
       });
+      setGameHistory((prevHistory) => [...prevHistory, gameNums]);
     } else {
       setSelectedNumIdx(index);
     }
@@ -93,6 +95,15 @@ export default function Home() {
 
   const handleOpClick = (index: number) => {
     setSelectedOpIdx(index);
+  };
+
+  const handleUndoClick = () => {
+    if (gameHistory.length === 0) return;
+    const prevGameNums = gameHistory[gameHistory.length - 1];
+    setGameNums(prevGameNums);
+    setGameHistory((prevHistory) => prevHistory.slice(0, -1));
+    setSelectedNumIdx(null);
+    setSelectedOpIdx(null);
   };
 
   return (
@@ -152,7 +163,10 @@ export default function Home() {
           <Lightbulb className="h-6 w-6" />
           <span className="text-xs">Hint</span>
         </button>
-        <button className="flex flex-col items-center gap-1">
+        <button
+          className="flex flex-col items-center gap-1"
+          onClick={handleUndoClick}
+        >
           <RotateCcw className="h-6 w-6" />
           <span className="text-xs">Undo</span>
         </button>
