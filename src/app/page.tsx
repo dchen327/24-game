@@ -35,7 +35,7 @@ export default function Home() {
   const [tempDifficultyForm, setTempDifficultyForm] = useState<number>(0); // for settings form
   const difficulties = ["Easy", "Medium", "Hard"];
   const [puzzleIdxs, setPuzzleIdxs] = useState<number[]>([0, 0, 0]);
-  const [gameNums, setGameNums] = useState<GameNum[]>([]);
+  const [gameNums, setGameNums] = useState<GameNum[]>([null, null, null, null]);
   const operations: string[] = ["+", "−", "×", "÷"];
   const [selectededNumIdx, setSelectedNumIdx] = useState<number | null>(null);
   const [selectedOpIdx, setSelectedOpIdx] = useState<number | null>(null);
