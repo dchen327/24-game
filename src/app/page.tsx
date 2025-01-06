@@ -242,7 +242,10 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-svh bg-white" onClick={handleOutsideClick}>
+    <div
+      className="flex flex-col h-screen bg-white"
+      onClick={handleOutsideClick}
+    >
       {/* Header */}
       <div className="text-center py-4">
         <h1 className="text-2xl font-medium">{difficulties[difficulty]}</h1>
