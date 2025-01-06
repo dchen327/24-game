@@ -105,6 +105,7 @@ export default function Home() {
           result = num1.mul(num2);
           break;
         case 3:
+          if (num2.valueOf() === 0) return;
           result = num1.div(num2);
           break;
         default:
@@ -185,7 +186,7 @@ export default function Home() {
               }`}
               onClick={() => handleNumClick(index)}
             >
-              {num?.valueOf()}
+              {num?.toFraction()}
             </button>
           ))}
         </div>
