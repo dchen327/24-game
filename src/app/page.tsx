@@ -166,8 +166,8 @@ export default function Home() {
         <h1 className="text-2xl font-medium">{difficulties[difficulty]}</h1>
       </div>
       {/* Game Grid */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4">
-        <div className="grid grid-cols-2 gap-4 w-full max-w-xs">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 mx-4">
+        <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
           {gameNums.map((num, index) => (
             <button
               key={index}
@@ -184,7 +184,7 @@ export default function Home() {
         </div>
 
         {/* Operation Buttons */}
-        <div className="grid grid-cols-4 gap-8 mt-16 w-full max-w-xs">
+        <div className="grid grid-cols-4 gap-8 mt-16 w-full max-w-sm">
           {operations.map((op, index) => (
             <button
               key={index}
@@ -201,35 +201,39 @@ export default function Home() {
         </div>
       </div>
       {/* Bottom Toolbar */}
-      <div className="flex justify-around items-center py-4 bg-gray-50">
-        <button
-          className="flex flex-col items-center gap-1"
-          onClick={handleNewPuzzleClick}
-        >
-          <ArrowLeftRight className="h-6 w-6" />
-          <span className="text-xs">New</span>
-        </button>
-        <button
-          className="flex flex-col items-center gap-1"
-          onClick={handleOpenSettingsModal}
-        >
-          <Settings className="h-6 w-6" />
-          <span className="text-xs">Settings</span>
-        </button>
-        <button
-          className="flex flex-col items-center gap-1"
-          onClick={handleHintClick}
-        >
-          <Lightbulb className="h-6 w-6" />
-          <span className="text-xs">Hint</span>
-        </button>
-        <button
-          className="flex flex-col items-center gap-1"
-          onClick={handleUndoClick}
-        >
-          <RotateCcw className="h-6 w-6" />
-          <span className="text-xs">Undo</span>
-        </button>
+      <div className="w-full">
+        <div className="max-w-sm mx-auto py-4 bg-gray-50 rounded-xl">
+          <div className="flex justify-around items-center">
+            <button
+              className="flex flex-col items-center gap-1"
+              onClick={handleNewPuzzleClick}
+            >
+              <ArrowLeftRight className="h-6 w-6" />
+              <span className="text-xs">New</span>
+            </button>
+            <button
+              className="flex flex-col items-center gap-1"
+              onClick={handleOpenSettingsModal}
+            >
+              <Settings className="h-6 w-6" />
+              <span className="text-xs">Settings</span>
+            </button>
+            <button
+              className="flex flex-col items-center gap-1"
+              onClick={handleHintClick}
+            >
+              <Lightbulb className="h-6 w-6" />
+              <span className="text-xs">Hint</span>
+            </button>
+            <button
+              className="flex flex-col items-center gap-1"
+              onClick={handleUndoClick}
+            >
+              <RotateCcw className="h-6 w-6" />
+              <span className="text-xs">Undo</span>
+            </button>
+          </div>
+        </div>
       </div>
       {/* Solved Modal */}
       <Dialog open={showSolvedModal} onOpenChange={setShowSolvedModal}>
@@ -238,7 +242,7 @@ export default function Home() {
             <DialogTitle className="text-xl">Congratulations!</DialogTitle>
           </DialogHeader>
           <div className="flex-1 flex flex-col items-center justify-center px-4">
-            <div className="grid grid-cols-2 gap-4 w-full max-w-xs">
+            <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
               {gameHistory[0]?.map((num, index) => (
                 <button
                   key={index}
