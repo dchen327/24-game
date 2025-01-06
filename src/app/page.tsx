@@ -160,7 +160,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-svh bg-white">
       {/* Header */}
       <div className="text-center py-4">
         <h1 className="text-2xl font-medium">{difficulties[difficulty]}</h1>
@@ -262,12 +262,6 @@ export default function Home() {
       </Dialog>
       {/* Settings Modal */}
       <Dialog open={showSettingsModal} onOpenChange={setShowSettingsModal}>
-        <DialogTrigger asChild>
-          <Button variant="ghost" size="icon">
-            <Settings className="h-[1.2rem] w-[1.2rem]" />
-            <span className="sr-only">Open settings</span>
-          </Button>
-        </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Settings</DialogTitle>
