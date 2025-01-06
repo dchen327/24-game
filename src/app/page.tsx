@@ -28,8 +28,11 @@ export default function Home() {
   // initially shuffle puzzles (3 lists easy, med, hard)
   const [puzzles, setPuzzles] = useState<Fraction[][][]>([]);
   const [loading, setLoading] = useState<boolean>(true); // for loading puzzles
-  const [difficulty, setDifficulty] = useState<number>(0); // 0-2
-  const [tempDifficulty, setTempDifficulty] = useState<number>(0); // for settings form
+  const [difficulty, setDifficulty] = useState<number>(1); // 0-2
+  const [tempPuzzleDifficulty, setTempPuzzleDifficulty] = useState<
+    number | null
+  >(null); // for when randomly adding another question from another difficulty
+  const [tempDifficultyForm, setTempDifficultyForm] = useState<number>(0); // for settings form
   const difficulties = ["Easy", "Medium", "Hard"];
   const [puzzleIdxs, setPuzzleIdxs] = useState<number[]>([0, 0, 0]);
   const [gameNums, setGameNums] = useState<GameNum[]>([]);
@@ -39,6 +42,7 @@ export default function Home() {
   const [gameHistory, setGameHistory] = useState<GameNum[][]>([]);
   const [showSolvedModal, setShowSolvedModal] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
+  const randomProb = 0.15; // TODO: make this a setting
 
   // Load puzzles
   useEffect(() => {
@@ -57,10 +61,11 @@ export default function Home() {
   // Display new puzzle
   useEffect(() => {
     if (loading) return;
-    const gameNums = shuffle(puzzles[difficulty][puzzleIdxs[difficulty]]);
+    const currDifficulty = tempPuzzleDifficulty ?? difficulty;
+    const gameNums = shuffle(puzzles[currDifficulty][puzzleIdxs[difficulty]]);
     setGameNums(gameNums);
     setGameHistory([gameNums]);
-  }, [difficulty, puzzleIdxs, puzzles, loading]);
+  }, [difficulty, puzzleIdxs, puzzles, loading, tempPuzzleDifficulty]);
 
   // Check if solved
   useEffect(() => {
@@ -140,13 +145,27 @@ export default function Home() {
 
   const handleNewPuzzleClick = (): void => {
     setShowSolvedModal(false);
-    // TODO: small chance of randomly picking another difficulty
-    // update idx to be +1 mod len
     const newPuzzleIdxs = [...puzzleIdxs];
-    newPuzzleIdxs[difficulty] =
-      (puzzleIdxs[difficulty] + 1) % puzzles[difficulty].length;
+    if (tempPuzzleDifficulty !== null) {
+      // just finished temp puzzle, go back to original difficulty and increment
+      setTempPuzzleDifficulty(null);
+      newPuzzleIdxs[difficulty] =
+        (puzzleIdxs[difficulty] + 1) % puzzles[difficulty].length;
+    } else if (Math.random() < randomProb) {
+      // randomly pick another difficulty out of the other 2
+      const otherDifficulties = [0, 1, 2].filter((d) => d !== difficulty);
+      const newDifficulty = otherDifficulties[Math.floor(Math.random() * 2)];
+      newPuzzleIdxs[newDifficulty] =
+        (puzzleIdxs[newDifficulty] + 1) % puzzles[newDifficulty].length;
+      setTempPuzzleDifficulty(newDifficulty);
+    } else {
+      // normal case: stay on same difficulty and increment
+      newPuzzleIdxs[difficulty] =
+        (puzzleIdxs[difficulty] + 1) % puzzles[difficulty].length;
+    }
     setPuzzleIdxs(newPuzzleIdxs);
     setSelectedNumIdx(null);
+    setSelectedOpIdx(null);
     setGameHistory([]);
   };
 
@@ -155,12 +174,12 @@ export default function Home() {
   };
 
   const handleOpenSettingsModal = () => {
-    setTempDifficulty(difficulty);
+    setTempDifficultyForm(difficulty);
     setShowSettingsModal(true);
   };
 
   const handleSaveSettingsClick = () => {
-    setDifficulty(tempDifficulty);
+    setDifficulty(tempDifficultyForm);
     setShowSettingsModal(false);
   };
 
@@ -283,8 +302,8 @@ export default function Home() {
                 Difficulty:
               </Label>
               <Select
-                value={tempDifficulty.toString()}
-                onValueChange={(value) => setTempDifficulty(Number(value))}
+                value={tempDifficultyForm.toString()}
+                onValueChange={(value) => setTempDifficultyForm(Number(value))}
               >
                 <SelectTrigger className="col-span-3 text-lg">
                   <SelectValue placeholder="Select difficulty" />
