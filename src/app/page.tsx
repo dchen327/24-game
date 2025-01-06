@@ -80,12 +80,17 @@ export default function Home() {
     return array;
   }
 
+  const handleOutsideClick = () => {
+    setSelectedNumIdx(null);
+    setSelectedOpIdx(null);
+  };
+
   const handleNumClick = (index: number) => {
-    if (
-      selectededNumIdx !== null &&
-      selectedOpIdx !== null &&
-      index !== selectededNumIdx
-    ) {
+    if (index === selectededNumIdx) {
+      setSelectedNumIdx(null);
+      return;
+    }
+    if (selectededNumIdx !== null && selectedOpIdx !== null) {
       const num1 = gameNums[selectededNumIdx]!;
       const num2 = gameNums[index]!;
       let result: Fraction;
@@ -120,7 +125,7 @@ export default function Home() {
   };
 
   const handleOpClick = (index: number) => {
-    setSelectedOpIdx(index);
+    setSelectedOpIdx(index === selectedOpIdx ? null : index);
   };
 
   const handleUndoClick = () => {
@@ -159,19 +164,22 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-svh bg-white">
+    <div className="flex flex-col h-svh bg-white" onClick={handleOutsideClick}>
       {/* Header */}
       <div className="text-center py-4">
         <h1 className="text-2xl font-medium">{difficulties[difficulty]}</h1>
       </div>
       {/* Game Grid */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 mx-4">
-        <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
+        <div
+          className="grid grid-cols-2 gap-4 w-full max-w-sm"
+          onClick={(e) => e.stopPropagation()}
+        >
           {gameNums.map((num, index) => (
             <button
               key={index}
               className={`aspect-square rounded-2xl flex items-center justify-center text-7xl font-medium ${
-                selectededNumIdx === index
+                selectededNumIdx === index && gameNums[index] !== null
                   ? "bg-blue-100 border-2 border-gray-600"
                   : "bg-gray-100"
               }`}
@@ -183,7 +191,10 @@ export default function Home() {
         </div>
 
         {/* Operation Buttons */}
-        <div className="grid grid-cols-4 gap-8 mt-16 w-full max-w-sm">
+        <div
+          className="grid grid-cols-4 gap-8 mt-16 w-full max-w-sm"
+          onClick={(e) => e.stopPropagation()}
+        >
           {operations.map((op, index) => (
             <button
               key={index}
@@ -263,29 +274,37 @@ export default function Home() {
       <Dialog open={showSettingsModal} onOpenChange={setShowSettingsModal}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Settings</DialogTitle>
+            <DialogTitle className="text-2xl">Settings</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="font-semibold text-right">Difficulty</Label>
+              <Label className="font-semibold text-right text-lg">
+                Difficulty:
+              </Label>
               <Select
                 value={tempDifficulty.toString()}
                 onValueChange={(value) => setTempDifficulty(Number(value))}
               >
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger className="col-span-3 text-lg">
                   <SelectValue placeholder="Select difficulty" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">Easy</SelectItem>
-                  <SelectItem value="1">Medium</SelectItem>
-                  <SelectItem value="2">Hard</SelectItem>
+                  <SelectItem value="0" className="text-lg">
+                    Easy
+                  </SelectItem>
+                  <SelectItem value="1" className="text-lg">
+                    Medium
+                  </SelectItem>
+                  <SelectItem value="2" className="text-lg">
+                    Hard
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <Button
             onClick={handleSaveSettingsClick}
-            className="w-full bg-blue-500 hover:bg-blue-600"
+            className="w-full bg-blue-500 hover:bg-blue-600 text-lg"
           >
             Save changes
           </Button>
