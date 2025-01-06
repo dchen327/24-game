@@ -10,6 +10,14 @@ import {
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 type GameNum = Fraction | null;
 
@@ -25,7 +33,7 @@ export default function Home() {
   const [selectededNumIdx, setSelectedNumIdx] = useState<number | null>(null);
   const [selectedOpIdx, setSelectedOpIdx] = useState<number | null>(null);
   const [gameHistory, setGameHistory] = useState<GameNum[][]>([]);
-  const [showSolvedModal, setShowSolvedModal] = useState<boolean>(false);
+  const [showSolvedModal, setShowSolvedModal] = useState<boolean>(true);
 
   // Load puzzles
   useEffect(() => {
@@ -44,8 +52,9 @@ export default function Home() {
   // Display new puzzle
   useEffect(() => {
     if (loading) return;
-    const gameNums = puzzles[difficulty][puzzleIdxs[difficulty]];
-    setGameNums(shuffle(gameNums));
+    const gameNums = shuffle(puzzles[difficulty][puzzleIdxs[difficulty]]);
+    setGameNums(gameNums);
+    setGameHistory([gameNums]);
   }, [difficulty, puzzleIdxs, puzzles, loading]);
 
   // Check if solved
@@ -199,19 +208,30 @@ export default function Home() {
         </button>
       </div>
       {showSolvedModal && (
-        <div className="fixed inset-0 z-10 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-gray-500 opacity-75"
-            onClick={() => handleNewPuzzleClick()}
-          ></div>
-          <div className="bg-white p-8 rounded-lg z-10">
-            <h2 className="text-2xl font-bold mb-4">Congratulations!</h2>
-            <p>You have won the game!</p>
-            <button className="mt-4" onClick={handleNewPuzzleClick}>
-              Play again
-            </button>
-          </div>
-        </div>
+        <Dialog open={showSolvedModal} onOpenChange={setShowSolvedModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-xl">Congratulations!</DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 flex flex-col items-center justify-center px-4">
+              <div className="grid grid-cols-2 gap-4 w-full max-w-xs">
+                {gameHistory[0]?.map((num, index) => (
+                  <button
+                    key={index}
+                    className="aspect-square rounded-2xl flex items-center justify-center text-7xl font-medium bg-gray-100"
+                  >
+                    {num?.valueOf()}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button className="bg-blue-500" onClick={handleNewPuzzleClick}>
+                Continue
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
