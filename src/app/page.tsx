@@ -39,7 +39,7 @@ export default function Home() {
   const [selectedOpIdx, setSelectedOpIdx] = useState<number | null>(null);
   const [gameHistory, setGameHistory] = useState<GameNum[][]>([]);
   const [showSolvedModal, setShowSolvedModal] = useState<boolean>(false);
-  const [showSettingsModal, setShowSettingsModal] = useState<boolean>(true);
+  const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
 
   // Load puzzles
   useEffect(() => {
