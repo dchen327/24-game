@@ -276,7 +276,7 @@ export default function Home() {
           {operations.map((op, index) => (
             <button
               key={index}
-              className={`text-5xl p-6 flex items-center justify-center w-16 h-16 ${
+              className={`text-5xl p-8 flex items-center justify-center w-16 h-16 ${
                 selectedOpIdx === index
                   ? "border-2 border-gray-600 rounded-full"
                   : ""
@@ -384,13 +384,13 @@ export default function Home() {
                   <SelectValue placeholder="Select difficulty" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0" className="text-lg">
+                  <SelectItem value="0" className="text-lg py-3">
                     Easy
                   </SelectItem>
-                  <SelectItem value="1" className="text-lg">
+                  <SelectItem value="1" className="text-lg py-3">
                     Medium
                   </SelectItem>
-                  <SelectItem value="2" className="text-lg">
+                  <SelectItem value="2" className="text-lg py-3">
                     Hard
                   </SelectItem>
                 </SelectContent>
