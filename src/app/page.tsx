@@ -28,7 +28,7 @@ export default function Home() {
   // initially shuffle puzzles (3 lists easy, med, hard)
   const [puzzles, setPuzzles] = useState<Fraction[][][]>([]);
   const [loading, setLoading] = useState<boolean>(true); // for loading puzzles
-  const [difficulty, setDifficulty] = useState<number>(0); // 0-2
+  const [difficulty, setDifficulty] = useState<number>(1); // 0-2
   const [tempPuzzleDifficulty, setTempPuzzleDifficulty] = useState<
     number | null
   >(null); // for when randomly adding another question from another difficulty
