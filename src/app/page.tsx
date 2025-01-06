@@ -237,7 +237,7 @@ export default function Home() {
       </div>
       {/* Solved Modal */}
       <Dialog open={showSolvedModal} onOpenChange={setShowSolvedModal}>
-        <DialogContent>
+        <DialogContent onInteractOutside={handleNewPuzzleClick}>
           <DialogHeader>
             <DialogTitle className="text-xl">Congratulations!</DialogTitle>
           </DialogHeader>
