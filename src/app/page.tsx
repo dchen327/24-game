@@ -28,7 +28,7 @@ export default function Home() {
   // initially shuffle puzzles (3 lists easy, med, hard)
   const [puzzles, setPuzzles] = useState<Fraction[][][]>([]);
   const [loading, setLoading] = useState<boolean>(true); // for loading puzzles
-  const [difficulty, setDifficulty] = useState<number>(1); // 0-2
+  const [difficulty, setDifficulty] = useState<number>(0); // 0-2
   const [tempPuzzleDifficulty, setTempPuzzleDifficulty] = useState<
     number | null
   >(null); // for when randomly adding another question from another difficulty
@@ -43,6 +43,22 @@ export default function Home() {
   const [showSolvedModal, setShowSolvedModal] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const randomProb = 0.15; // TODO: make this a setting
+
+  const canMake24 = (num1: Fraction, num2: Fraction): boolean => {
+    const operations = [
+      () => num1.add(num2),
+      () => num1.sub(num2),
+      () => num2.sub(num1),
+      () => num1.mul(num2),
+      () => (num2.valueOf() !== 0 ? num1.div(num2) : null),
+      () => (num1.valueOf() !== 0 ? num2.div(num1) : null),
+    ];
+
+    return operations.some((operation) => {
+      const result = operation();
+      return result?.equals(24) ?? false;
+    });
+  };
 
   // Load puzzles
   useEffect(() => {
@@ -67,13 +83,21 @@ export default function Home() {
     setGameHistory([gameNums]);
   }, [difficulty, puzzleIdxs, puzzles, loading, tempPuzzleDifficulty]);
 
-  // Check if solved
+  // Check if solved, will auto solve if 2 nums left and can get to 24
   useEffect(() => {
     if (
       gameNums.filter((num) => num !== null).length === 1 &&
       gameNums.some((num) => num?.valueOf() === 24)
     ) {
       setShowSolvedModal(true);
+    } else if (gameNums.filter((num) => num !== null).length === 2) {
+      // check if can get to 24
+      const nonNull = gameNums.filter((num) => num !== null);
+      const num1 = nonNull[0]!;
+      const num2 = nonNull[1]!;
+      if (canMake24(num1, num2)) {
+        setShowSolvedModal(true);
+      }
     }
   }, [gameNums]);
 
