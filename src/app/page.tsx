@@ -40,24 +40,35 @@ export default function Home() {
   const [selectededNumIdx, setSelectedNumIdx] = useState<number | null>(null);
   const [selectedOpIdx, setSelectedOpIdx] = useState<number | null>(null);
   const [gameHistory, setGameHistory] = useState<GameNum[][]>([]);
+  const [solveSteps, setSolveSteps] = useState<string[]>([]);
   const [showSolvedModal, setShowSolvedModal] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const randomProb = 0.15; // TODO: make this a setting
 
-  const canMake24 = (num1: Fraction, num2: Fraction): boolean => {
+  const findSoln24 = (num1: Fraction, num2: Fraction): string | null => {
     const operations = [
-      () => num1.add(num2),
-      () => num1.sub(num2),
-      () => num2.sub(num1),
-      () => num1.mul(num2),
-      () => (num2.valueOf() !== 0 ? num1.div(num2) : null),
-      () => (num1.valueOf() !== 0 ? num2.div(num1) : null),
+      { fn: () => num1.add(num2), symbol: "+" },
+      { fn: () => num1.sub(num2), symbol: "−" },
+      { fn: () => num2.sub(num1), symbol: "−", reverse: true },
+      { fn: () => num1.mul(num2), symbol: "×" },
+      { fn: () => (num2.valueOf() !== 0 ? num1.div(num2) : null), symbol: "÷" },
+      {
+        fn: () => (num1.valueOf() !== 0 ? num2.div(num1) : null),
+        symbol: "÷",
+        reverse: true,
+      },
     ];
 
-    return operations.some((operation) => {
-      const result = operation();
-      return result?.equals(24) ?? false;
-    });
+    for (const op of operations) {
+      const result = op.fn();
+      if (result?.equals(24)) {
+        const n1 = op.reverse ? num2.toFraction() : num1.toFraction();
+        const n2 = op.reverse ? num1.toFraction() : num2.toFraction();
+        return `${n1} ${op.symbol} ${n2} = 24`;
+      }
+    }
+
+    return null;
   };
 
   // Load puzzles
@@ -95,7 +106,9 @@ export default function Home() {
       const nonNull = gameNums.filter((num) => num !== null);
       const num1 = nonNull[0]!;
       const num2 = nonNull[1]!;
-      if (canMake24(num1, num2)) {
+      const soln = findSoln24(num1, num2);
+      if (soln) {
+        setSolveSteps((prevSteps) => [...prevSteps, soln]);
         setShowSolvedModal(true);
       }
     }
@@ -149,6 +162,12 @@ export default function Home() {
         return newNums;
       });
       setGameHistory((prevHistory) => [...prevHistory, gameNums]);
+      setSolveSteps((prevSteps) => [
+        ...prevSteps,
+        `${num1.toFraction()} ${
+          operations[selectedOpIdx]
+        } ${num2.toFraction()} = ${result.toFraction()}`,
+      ]);
     } else {
       setSelectedNumIdx(index);
     }
@@ -159,10 +178,12 @@ export default function Home() {
   };
 
   const handleUndoClick = () => {
+    console.log(solveSteps);
     if (gameHistory.length === 0) return;
     const prevGameNums = gameHistory[gameHistory.length - 1];
     setGameNums(prevGameNums);
     setGameHistory((prevHistory) => prevHistory.slice(0, -1));
+    setSolveSteps((prevSteps) => prevSteps.slice(0, -1));
     setSelectedNumIdx(null);
     setSelectedOpIdx(null);
   };
@@ -191,6 +212,7 @@ export default function Home() {
     setSelectedNumIdx(null);
     setSelectedOpIdx(null);
     setGameHistory([]);
+    setSolveSteps([]);
   };
 
   const handleHintClick = () => {
@@ -205,6 +227,18 @@ export default function Home() {
   const handleSaveSettingsClick = () => {
     setDifficulty(tempDifficultyForm);
     setShowSettingsModal(false);
+  };
+
+  const parseEquation = (step: string) => {
+    console.log(step);
+    const [leftSide, rightSide] = step.split("=");
+    const parts = leftSide.trim().split(" ");
+    return {
+      A: parts[0].trim(),
+      op: parts[1].trim(),
+      B: parts[2].trim(),
+      C: rightSide.trim(),
+    };
   };
 
   return (
@@ -293,22 +327,39 @@ export default function Home() {
       <Dialog open={showSolvedModal} onOpenChange={setShowSolvedModal}>
         <DialogContent onInteractOutside={handleNewPuzzleClick}>
           <DialogHeader>
-            <DialogTitle className="text-xl">Congratulations!</DialogTitle>
+            <DialogTitle className="text-2xl">Congratulations!</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 flex flex-col items-center justify-center px-4">
+          <div className="flex-1 flex flex-col items-center justify-center px-4 mx-10">
             <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
               {gameHistory[0]?.map((num, index) => (
                 <button
                   key={index}
-                  className="aspect-square rounded-2xl flex items-center justify-center text-7xl font-medium bg-gray-100"
+                  className="aspect-square rounded-2xl flex items-center justify-center text-5xl font-medium bg-gray-100"
                 >
                   {num?.valueOf()}
                 </button>
               ))}
             </div>
           </div>
+          <div className="grid gap-4 mx-auto p-4">
+            {solveSteps.map((step, idx) => {
+              const { A, op, B, C } = parseEquation(step);
+              return (
+                <div key={idx} className="grid grid-cols-5 items-center">
+                  <div className="bg-gray-100 rounded p-2 text-center">{A}</div>
+                  <div className="text-center p-2">{op}</div>
+                  <div className="bg-gray-100 rounded p-2 text-center">{B}</div>
+                  <div className="text-center p-2">=</div>
+                  <div className="bg-gray-100 rounded p-2 text-center">{C}</div>
+                </div>
+              );
+            })}
+          </div>
           <DialogFooter>
-            <Button className="bg-blue-500" onClick={handleNewPuzzleClick}>
+            <Button
+              className="bg-blue-500 text-lg hover:bg-blue-600 py-6"
+              onClick={handleNewPuzzleClick}
+            >
               Continue
             </Button>
           </DialogFooter>
@@ -348,7 +399,7 @@ export default function Home() {
           </div>
           <Button
             onClick={handleSaveSettingsClick}
-            className="w-full bg-blue-500 hover:bg-blue-600 text-lg"
+            className="bg-blue-500 text-lg hover:bg-blue-600 py-6"
           >
             Save changes
           </Button>
