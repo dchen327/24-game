@@ -2,12 +2,7 @@
 
 import Fraction from "fraction.js";
 import puzzlesImport from "@/puzzles.json";
-import {
-  ArrowLeftRight,
-  Lightbulb,
-  MessageSquare,
-  RotateCcw,
-} from "lucide-react";
+import { ArrowLeftRight, Lightbulb, RotateCcw, Settings } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import {
@@ -16,7 +11,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 type GameNum = Fraction | null;
@@ -26,6 +30,7 @@ export default function Home() {
   const [puzzles, setPuzzles] = useState<Fraction[][][]>([]);
   const [loading, setLoading] = useState<boolean>(true); // for loading puzzles
   const [difficulty, setDifficulty] = useState<number>(0); // 0-2
+  const [tempDifficulty, setTempDifficulty] = useState<number>(0); // for settings form
   const difficulties = ["Easy", "Medium", "Hard"];
   const [puzzleIdxs, setPuzzleIdxs] = useState<number[]>([0, 0, 0]);
   const [gameNums, setGameNums] = useState<GameNum[]>([]);
@@ -33,7 +38,8 @@ export default function Home() {
   const [selectededNumIdx, setSelectedNumIdx] = useState<number | null>(null);
   const [selectedOpIdx, setSelectedOpIdx] = useState<number | null>(null);
   const [gameHistory, setGameHistory] = useState<GameNum[][]>([]);
-  const [showSolvedModal, setShowSolvedModal] = useState<boolean>(true);
+  const [showSolvedModal, setShowSolvedModal] = useState<boolean>(false);
+  const [showSettingsModal, setShowSettingsModal] = useState<boolean>(true);
 
   // Load puzzles
   useEffect(() => {
@@ -139,13 +145,26 @@ export default function Home() {
     setGameHistory([]);
   };
 
+  const handleHintClick = () => {
+    console.log("hint");
+  };
+
+  const handleOpenSettingsModal = () => {
+    setTempDifficulty(difficulty);
+    setShowSettingsModal(true);
+  };
+
+  const handleSaveSettingsClick = () => {
+    setDifficulty(tempDifficulty);
+    setShowSettingsModal(false);
+  };
+
   return (
     <div className="flex flex-col h-screen bg-white">
       {/* Header */}
       <div className="text-center py-4">
         <h1 className="text-2xl font-medium">{difficulties[difficulty]}</h1>
       </div>
-
       {/* Game Grid */}
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="grid grid-cols-2 gap-4 w-full max-w-xs">
@@ -181,7 +200,6 @@ export default function Home() {
           ))}
         </div>
       </div>
-
       {/* Bottom Toolbar */}
       <div className="flex justify-around items-center py-4 bg-gray-50">
         <button
@@ -191,11 +209,17 @@ export default function Home() {
           <ArrowLeftRight className="h-6 w-6" />
           <span className="text-xs">New</span>
         </button>
-        <button className="flex flex-col items-center gap-1">
-          <MessageSquare className="h-6 w-6" />
-          <span className="text-xs">Ask</span>
+        <button
+          className="flex flex-col items-center gap-1"
+          onClick={handleOpenSettingsModal}
+        >
+          <Settings className="h-6 w-6" />
+          <span className="text-xs">Settings</span>
         </button>
-        <button className="flex flex-col items-center gap-1">
+        <button
+          className="flex flex-col items-center gap-1"
+          onClick={handleHintClick}
+        >
           <Lightbulb className="h-6 w-6" />
           <span className="text-xs">Hint</span>
         </button>
@@ -207,32 +231,69 @@ export default function Home() {
           <span className="text-xs">Undo</span>
         </button>
       </div>
-      {showSolvedModal && (
-        <Dialog open={showSolvedModal} onOpenChange={setShowSolvedModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="text-xl">Congratulations!</DialogTitle>
-            </DialogHeader>
-            <div className="flex-1 flex flex-col items-center justify-center px-4">
-              <div className="grid grid-cols-2 gap-4 w-full max-w-xs">
-                {gameHistory[0]?.map((num, index) => (
-                  <button
-                    key={index}
-                    className="aspect-square rounded-2xl flex items-center justify-center text-7xl font-medium bg-gray-100"
-                  >
-                    {num?.valueOf()}
-                  </button>
-                ))}
-              </div>
+      {/* Solved Modal */}
+      <Dialog open={showSolvedModal} onOpenChange={setShowSolvedModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-xl">Congratulations!</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 flex flex-col items-center justify-center px-4">
+            <div className="grid grid-cols-2 gap-4 w-full max-w-xs">
+              {gameHistory[0]?.map((num, index) => (
+                <button
+                  key={index}
+                  className="aspect-square rounded-2xl flex items-center justify-center text-7xl font-medium bg-gray-100"
+                >
+                  {num?.valueOf()}
+                </button>
+              ))}
             </div>
-            <DialogFooter>
-              <Button className="bg-blue-500" onClick={handleNewPuzzleClick}>
-                Continue
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+          </div>
+          <DialogFooter>
+            <Button className="bg-blue-500" onClick={handleNewPuzzleClick}>
+              Continue
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Settings Modal */}
+      <Dialog open={showSettingsModal} onOpenChange={setShowSettingsModal}>
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <Settings className="h-[1.2rem] w-[1.2rem]" />
+            <span className="sr-only">Open settings</span>
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Settings</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="font-semibold text-right">Difficulty</Label>
+              <Select
+                value={tempDifficulty.toString()}
+                onValueChange={(value) => setTempDifficulty(Number(value))}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select difficulty" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">Easy</SelectItem>
+                  <SelectItem value="1">Medium</SelectItem>
+                  <SelectItem value="2">Hard</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <Button
+            onClick={handleSaveSettingsClick}
+            className="w-full bg-blue-500 hover:bg-blue-600"
+          >
+            Save changes
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
