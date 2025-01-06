@@ -276,9 +276,9 @@ export default function Home() {
           {operations.map((op, index) => (
             <button
               key={index}
-              className={`text-5xl p-8 flex items-center justify-center w-16 h-16 ${
+              className={`text-5xl p-8 flex items-center justify-center w-24 h-24 relative ${
                 selectedOpIdx === index
-                  ? "border-2 border-gray-600 rounded-full"
+                  ? "after:absolute after:w-16 after:h-16 after:border-2 after:border-gray-600 after:rounded-full"
                   : ""
               }`}
               onClick={() => handleOpClick(index)}
