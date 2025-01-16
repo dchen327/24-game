@@ -237,7 +237,25 @@ export default function Home() {
   };
 
   const handleShuffleClick = () => {
-    setGameNums((prevNums) => shuffle([...prevNums]));
+    const maxAttempts = 10; // Limit the number of shuffle attempts
+    let shuffledNums = [...gameNums];
+    let attempts = 0;
+
+    const areArraysEqual = (arr1: GameNum[], arr2: GameNum[]) => {
+      return (
+        arr1.length === arr2.length &&
+        arr1.every(
+          (num, index) => num?.toFraction() === arr2[index]?.toFraction()
+        )
+      );
+    };
+
+    do {
+      shuffledNums = shuffle([...gameNums]);
+      attempts++;
+    } while (areArraysEqual(shuffledNums, gameNums) && attempts < maxAttempts);
+
+    setGameNums(shuffledNums);
   };
 
   const parseEquation = (step: string) => {
