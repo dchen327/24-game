@@ -248,9 +248,9 @@ export default function Home() {
         <h1 className="text-2xl font-medium">{difficulties[difficulty]}</h1>
       </div>
       {/* Game Grid */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 mx-4">
+      <div className="flex-1 flex flex-col items-center justify-center">
         <div
-          className="grid grid-cols-2 gap-4 w-full max-w-sm"
+          className="grid grid-cols-2 gap-4 w-full max-w-sm px-4 mx-4 "
           onClick={(e) => e.stopPropagation()}
         >
           {gameNums.map((num, index) => (
@@ -270,13 +270,13 @@ export default function Home() {
 
         {/* Operation Buttons */}
         <div
-          className="grid grid-cols-4 my-4"
+          className="grid grid-cols-4 gap-0 mx-4 my-4"
           onClick={(e) => e.stopPropagation()}
         >
           {operations.map((op, index) => (
             <button
               key={index}
-              className={`text-5xl pb-8 pt-16 flex items-center justify-center w-24 h-24 relative ${
+              className={`text-5xl pb-12 pt-16 px-10 flex items-center justify-center max-w-24 max-h-24 ${
                 selectedOpIdx === index
                   ? "after:absolute after:w-16 after:h-16 after:border-2 after:border-gray-600 after:rounded-full"
                   : ""
