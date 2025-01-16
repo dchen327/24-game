@@ -2,7 +2,13 @@
 
 import Fraction from "fraction.js";
 import puzzlesImport from "@/puzzles.json";
-import { ArrowLeftRight, Lightbulb, RotateCcw, Settings } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Lightbulb,
+  RotateCcw,
+  Settings,
+  Shuffle,
+} from "lucide-react";
 
 import { useEffect, useState } from "react";
 import {
@@ -135,6 +141,7 @@ export default function Home() {
     if (selectededNumIdx !== null && selectedOpIdx !== null) {
       const num1 = gameNums[selectededNumIdx]!;
       const num2 = gameNums[index]!;
+      if (num1 === null || num2 === null) return;
       let result: Fraction;
       switch (selectedOpIdx) {
         case 0:
@@ -229,6 +236,10 @@ export default function Home() {
     setShowSettingsModal(false);
   };
 
+  const handleShuffleClick = () => {
+    setGameNums((prevNums) => shuffle([...prevNums]));
+  };
+
   const parseEquation = (step: string) => {
     console.log(step);
     const [leftSide, rightSide] = step.split("=");
@@ -244,8 +255,21 @@ export default function Home() {
   return (
     <div className="flex flex-col h-svh bg-white" onClick={handleOutsideClick}>
       {/* Header */}
-      <div className="text-center py-4">
+      {/* <div className="text-center py-4">
         <h1 className="text-2xl font-medium">{difficulties[difficulty]}</h1>
+      </div> */}
+      {/* Header */}
+      <div className="flex items-center justify-between py-4 px-4">
+        <div className="w-10" />
+        <h1 className="text-2xl font-medium flex-grow text-center">
+          {difficulties[difficulty]}
+        </h1>
+        <button
+          className="w-10 h-10 flex items-center justify-center"
+          onClick={handleOpenSettingsModal}
+        >
+          <Settings className="h-6 w-6" />
+        </button>
       </div>
       {/* Game Grid */}
       <div className="flex-1 flex flex-col items-center justify-center">
@@ -301,10 +325,10 @@ export default function Home() {
             </button>
             <button
               className="flex flex-col items-center gap-1"
-              onClick={handleOpenSettingsModal}
+              onClick={handleShuffleClick}
             >
-              <Settings className="h-6 w-6" />
-              <span className="text-xs">Settings</span>
+              <Shuffle className="h-6 w-6" />
+              <span className="text-xs">Shuffle</span>
             </button>
             <button
               className="flex flex-col items-center gap-1"
