@@ -270,13 +270,13 @@ export default function Home() {
 
         {/* Operation Buttons */}
         <div
-          className="grid grid-cols-4 gap-8 mt-16 w-full max-w-sm"
+          className="grid grid-cols-4 my-4"
           onClick={(e) => e.stopPropagation()}
         >
           {operations.map((op, index) => (
             <button
               key={index}
-              className={`text-5xl p-8 flex items-center justify-center w-24 h-24 relative ${
+              className={`text-5xl pb-8 pt-16 flex items-center justify-center w-24 h-24 relative ${
                 selectedOpIdx === index
                   ? "after:absolute after:w-16 after:h-16 after:border-2 after:border-gray-600 after:rounded-full"
                   : ""
