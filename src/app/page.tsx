@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { SettingsModal } from "@/components/settings-modal";
 
 type GameNum = Fraction | null;
 
@@ -277,15 +278,15 @@ export default function Home() {
         <h1 className="text-2xl font-medium">{difficulties[difficulty]}</h1>
       </div> */}
       {/* Header */}
-      <div className="flex items-center justify-between py-4 px-4">
-        <div className="w-10" />
+      <div
+        className="flex items-center justify-between pt-4 px-4"
+        onClick={handleOpenSettingsModal}
+      >
+        <div className="w-12" />
         <h1 className="text-2xl font-medium flex-grow text-center">
           {difficulties[difficulty]}
         </h1>
-        <button
-          className="w-10 h-10 flex items-center justify-center"
-          onClick={handleOpenSettingsModal}
-        >
+        <button className="w-12 h-12 flex items-center justify-center">
           <Settings className="h-6 w-6" />
         </button>
       </div>
@@ -407,46 +408,13 @@ export default function Home() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      {/* Settings Modal */}
-      <Dialog open={showSettingsModal} onOpenChange={setShowSettingsModal}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">Settings</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="font-semibold text-right text-lg">
-                Difficulty:
-              </Label>
-              <Select
-                value={tempDifficultyForm.toString()}
-                onValueChange={(value) => setTempDifficultyForm(Number(value))}
-              >
-                <SelectTrigger className="col-span-3 text-lg">
-                  <SelectValue placeholder="Select difficulty" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0" className="text-lg py-3">
-                    Easy
-                  </SelectItem>
-                  <SelectItem value="1" className="text-lg py-3">
-                    Medium
-                  </SelectItem>
-                  <SelectItem value="2" className="text-lg py-3">
-                    Hard
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <Button
-            onClick={handleSaveSettingsClick}
-            className="bg-blue-500 text-lg hover:bg-blue-600 py-6"
-          >
-            Save changes
-          </Button>
-        </DialogContent>
-      </Dialog>
+      <SettingsModal
+        open={showSettingsModal}
+        onOpenChange={setShowSettingsModal}
+        tempDifficultyForm={tempDifficultyForm}
+        setTempDifficultyForm={setTempDifficultyForm}
+        handleSaveSettingsClick={handleSaveSettingsClick}
+      />
     </div>
   );
 }
