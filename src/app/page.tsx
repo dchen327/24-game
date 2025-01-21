@@ -19,19 +19,10 @@ import { gameUtils } from "@/components/game-utils";
 const DIFFICULTY_KEY = "game-difficulty";
 
 export default function Home() {
-  const getInitialDifficulty = (): number => {
-    const storedDifficulty = localStorage.getItem(DIFFICULTY_KEY);
-    if (storedDifficulty !== null) {
-      return parseInt(storedDifficulty);
-    }
-    return 1; // Default to medium if no valid stored difficulty
-  };
   // initially shuffle puzzles (3 lists easy, med, hard)
   const [puzzles, setPuzzles] = useState<Fraction[][][]>([]);
   const [loading, setLoading] = useState<boolean>(true); // for loading puzzles
-  const [difficulty, setDifficulty] = useState<number>(() =>
-    getInitialDifficulty()
-  ); // 0-2 (easy-hard)
+  const [difficulty, setDifficulty] = useState<number>(1); // 0-2 (easy-hard)
   const [tempPuzzleDifficulty, setTempPuzzleDifficulty] = useState<
     number | null
   >(null); // for when randomly adding another question from another difficulty
@@ -62,7 +53,7 @@ export default function Home() {
       setPuzzles(puzzles);
 
       // Load stored difficulty
-      const storedDifficulty = localStorage.getItem(DIFFICULTY_KEY);
+      const storedDifficulty = window.localStorage.getItem(DIFFICULTY_KEY);
       if (storedDifficulty !== null) {
         setDifficulty(parseInt(storedDifficulty));
       }
@@ -244,7 +235,7 @@ export default function Home() {
       >
         <div className="w-12" />
         <h1 className="text-2xl font-medium flex-grow text-center">
-          {difficulties[difficulty]}
+          {loading ? "" : difficulties[difficulty]}
         </h1>
         <button className="w-12 h-12 flex items-center justify-center">
           <Settings className="h-6 w-6" />
