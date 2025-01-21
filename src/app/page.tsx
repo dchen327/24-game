@@ -11,22 +11,6 @@ import {
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { SettingsModal } from "@/components/settings-modal";
 import { GameNum } from "@/types/game-types";
 import { SolvedModal } from "@/components/solved-modal";
