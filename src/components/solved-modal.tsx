@@ -4,6 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { GameNum } from "@/types/game-types";
@@ -12,6 +13,7 @@ type SolvedModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   gameHistory: GameNum[][];
+  difficulty: string;
   solveSteps: string[];
   handleNewPuzzleClick: () => void;
 };
@@ -20,11 +22,11 @@ export function SolvedModal({
   open,
   onOpenChange,
   gameHistory,
+  difficulty,
   solveSteps,
   handleNewPuzzleClick,
 }: SolvedModalProps) {
   const parseEquation = (step: string) => {
-    console.log(step);
     const [leftSide, rightSide] = step.split("=");
     const parts = leftSide.trim().split(" ");
     return {
@@ -41,6 +43,10 @@ export function SolvedModal({
         <DialogHeader>
           <DialogTitle className="text-2xl">Congratulations!</DialogTitle>
         </DialogHeader>
+        <DialogDescription />
+        <div className="text-center text-xl font-normal">
+          Actual Difficulty: {difficulty}
+        </div>
         <div className="flex-1 flex flex-col items-center justify-center px-4 mx-10">
           <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
             {gameHistory[0]?.map((num, index) => (

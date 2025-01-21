@@ -14,6 +14,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "./ui/checkbox";
+import { DialogDescription } from "@radix-ui/react-dialog";
 
 type SettingsModalProps = {
   open: boolean;
@@ -40,6 +41,7 @@ export function SettingsModal({
         <DialogHeader>
           <DialogTitle className="text-2xl">Settings</DialogTitle>
         </DialogHeader>
+        <DialogDescription />
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-2 items-center gap-4">
             <Label htmlFor="difficulty" className="font-semibold text-xl">

@@ -164,7 +164,6 @@ export default function Home() {
   };
 
   const handleUndoClick = () => {
-    console.log(solveSteps);
     if (gameHistory.length === 0) return;
     const prevGameNums = gameHistory[gameHistory.length - 1];
     setGameNums(prevGameNums);
@@ -177,15 +176,11 @@ export default function Home() {
   const handleNewPuzzleClick = (): void => {
     setShowSolvedModal(false);
     const newPuzzleIdxs = [...puzzleIdxs];
-    if (tempPuzzleDifficulty !== null) {
-      // just finished temp puzzle, go back to original difficulty and increment
-      setTempPuzzleDifficulty(null);
-      newPuzzleIdxs[difficulty] =
-        (puzzleIdxs[difficulty] + 1) % puzzles[difficulty].length;
-    } else if (Math.random() < randomProb) {
-      // randomly pick another difficulty out of the other 2
-      const otherDifficulties = [0, 1, 2].filter((d) => d !== difficulty);
-      const newDifficulty = otherDifficulties[Math.floor(Math.random() * 2)];
+    if (difficulty > 0 && Math.random() < randomProb) {
+      // randomly pick another easier difficulty
+      const otherDifficulties = [0, 1, 2].filter((d) => d < difficulty);
+      const newDifficulty =
+        otherDifficulties[Math.floor(Math.random() * otherDifficulties.length)];
       newPuzzleIdxs[newDifficulty] =
         (puzzleIdxs[newDifficulty] + 1) % puzzles[newDifficulty].length;
       setTempPuzzleDifficulty(newDifficulty);
@@ -336,6 +331,7 @@ export default function Home() {
         open={showSolvedModal}
         onOpenChange={setShowSolvedModal}
         gameHistory={gameHistory}
+        difficulty={difficulties[tempPuzzleDifficulty ?? difficulty]}
         solveSteps={solveSteps}
         handleNewPuzzleClick={handleNewPuzzleClick}
       />
