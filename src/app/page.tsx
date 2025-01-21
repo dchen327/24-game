@@ -28,8 +28,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { SettingsModal } from "@/components/settings-modal";
-
-type GameNum = Fraction | null;
+import { GameNum } from "@/types/game-types";
+import { SolvedModal } from "@/components/solved-modal";
 
 export default function Home() {
   // initially shuffle puzzles (3 lists easy, med, hard)
@@ -259,24 +259,8 @@ export default function Home() {
     setGameNums(shuffledNums);
   };
 
-  const parseEquation = (step: string) => {
-    console.log(step);
-    const [leftSide, rightSide] = step.split("=");
-    const parts = leftSide.trim().split(" ");
-    return {
-      A: parts[0].trim(),
-      op: parts[1].trim(),
-      B: parts[2].trim(),
-      C: rightSide.trim(),
-    };
-  };
-
   return (
     <div className="flex flex-col h-svh bg-white" onClick={handleOutsideClick}>
-      {/* Header */}
-      {/* <div className="text-center py-4">
-        <h1 className="text-2xl font-medium">{difficulties[difficulty]}</h1>
-      </div> */}
       {/* Header */}
       <div
         className="flex items-center justify-between pt-4 px-4"
@@ -366,48 +350,13 @@ export default function Home() {
           </div>
         </div>
       </div>
-      {/* Solved Modal */}
-      <Dialog open={showSolvedModal} onOpenChange={setShowSolvedModal}>
-        <DialogContent onInteractOutside={handleNewPuzzleClick}>
-          <DialogHeader>
-            <DialogTitle className="text-2xl">Congratulations!</DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 flex flex-col items-center justify-center px-4 mx-10">
-            <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
-              {gameHistory[0]?.map((num, index) => (
-                <button
-                  key={index}
-                  className="aspect-square rounded-2xl flex items-center justify-center text-5xl font-medium bg-gray-100"
-                >
-                  {num?.valueOf()}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="grid gap-4 mx-auto p-4">
-            {solveSteps.map((step, idx) => {
-              const { A, op, B, C } = parseEquation(step);
-              return (
-                <div key={idx} className="grid grid-cols-5 items-center">
-                  <div className="bg-gray-100 rounded p-2 text-center">{A}</div>
-                  <div className="text-center p-2">{op}</div>
-                  <div className="bg-gray-100 rounded p-2 text-center">{B}</div>
-                  <div className="text-center p-2">=</div>
-                  <div className="bg-gray-100 rounded p-2 text-center">{C}</div>
-                </div>
-              );
-            })}
-          </div>
-          <DialogFooter>
-            <Button
-              className="bg-blue-500 text-lg hover:bg-blue-600 py-6"
-              onClick={handleNewPuzzleClick}
-            >
-              Continue
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SolvedModal
+        open={showSolvedModal}
+        onOpenChange={setShowSolvedModal}
+        gameHistory={gameHistory}
+        solveSteps={solveSteps}
+        handleNewPuzzleClick={handleNewPuzzleClick}
+      />
       <SettingsModal
         open={showSettingsModal}
         onOpenChange={setShowSettingsModal}
