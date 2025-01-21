@@ -69,7 +69,7 @@ export function SolvedModal({
         </div>
         <DialogFooter>
           <Button
-            className="bg-blue-500 text-lg hover:bg-blue-600 py-6"
+            className="bg-blue-500 text-xl hover:bg-blue-600 py-7"
             onClick={handleNewPuzzleClick}
           >
             Continue

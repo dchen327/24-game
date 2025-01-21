@@ -17,16 +17,16 @@ import { SolvedModal } from "@/components/solved-modal";
 import { gameUtils } from "@/components/game-utils";
 
 const DIFFICULTY_KEY = "game-difficulty";
+const AUTOCOMPLETE_KEY = "game-autocomplete";
 
 export default function Home() {
-  // initially shuffle puzzles (3 lists easy, med, hard)
+  // Initially shuffle puzzles (3 lists easy, med, hard)
   const [puzzles, setPuzzles] = useState<Fraction[][][]>([]);
-  const [loading, setLoading] = useState<boolean>(true); // for loading puzzles
+  const [loading, setLoading] = useState<boolean>(true); // Loading puzzles and localStorage
   const [difficulty, setDifficulty] = useState<number>(1); // 0-2 (easy-hard)
   const [tempPuzzleDifficulty, setTempPuzzleDifficulty] = useState<
     number | null
-  >(null); // for when randomly adding another question from another difficulty
-  const [tempDifficultyForm, setTempDifficultyForm] = useState<number>(1); // for settings form
+  >(null); // For when randomly adding another question from another difficulty
   const difficulties = ["Easy", "Medium", "Hard"];
   const [puzzleIdxs, setPuzzleIdxs] = useState<number[]>([0, 0, 0]);
   const [gameNums, setGameNums] = useState<GameNum[]>([null, null, null, null]);
@@ -37,7 +37,11 @@ export default function Home() {
   const [solveSteps, setSolveSteps] = useState<string[]>([]);
   const [showSolvedModal, setShowSolvedModal] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
+  const [autocomplete, setAutocomplete] = useState<boolean>(true);
   const randomProb = 0.15; // TODO: make this a setting
+  // Settings form
+  const [difficultyForm, setDifficultyForm] = useState<number>(1);
+  const [autocompleteForm, setAutocompleteForm] = useState<boolean>(true);
 
   // Load initial data: puzzles and stored difficulty
   useEffect(() => {
@@ -52,10 +56,14 @@ export default function Home() {
       );
       setPuzzles(puzzles);
 
-      // Load stored difficulty
-      const storedDifficulty = window.localStorage.getItem(DIFFICULTY_KEY);
+      // Load local storage
+      const storedDifficulty = localStorage.getItem(DIFFICULTY_KEY);
       if (storedDifficulty !== null) {
         setDifficulty(parseInt(storedDifficulty));
+      }
+      const storedAutocomplete = localStorage.getItem(AUTOCOMPLETE_KEY);
+      if (storedAutocomplete !== null) {
+        setAutocomplete(storedAutocomplete === "true");
       }
 
       setLoading(false);
@@ -75,15 +83,19 @@ export default function Home() {
     setGameHistory([gameNums]);
   }, [difficulty, puzzleIdxs, puzzles, loading, tempPuzzleDifficulty]);
 
-  // Check if solved, will auto solve if 2 nums left and can get to 24
+  // Check if solved
   useEffect(() => {
     if (
       gameNums.filter((num) => num !== null).length === 1 &&
       gameNums.some((num) => num?.valueOf() === 24)
     ) {
       setShowSolvedModal(true);
-    } else if (gameNums.filter((num) => num !== null).length === 2) {
-      // check if can get to 24
+      // Autocomplete last step
+    } else if (
+      autocomplete &&
+      gameNums.filter((num) => num !== null).length === 2
+    ) {
+      // Check if can get to 24 with last 2
       const nonNull = gameNums.filter((num) => num !== null);
       const num1 = nonNull[0]!;
       const num2 = nonNull[1]!;
@@ -93,7 +105,7 @@ export default function Home() {
         setShowSolvedModal(true);
       }
     }
-  }, [gameNums]);
+  }, [autocomplete, gameNums]);
 
   const handleOutsideClick = () => {
     setSelectedNumIdx(null);
@@ -194,13 +206,16 @@ export default function Home() {
   };
 
   const handleOpenSettingsModal = () => {
-    setTempDifficultyForm(difficulty);
+    setDifficultyForm(difficulty);
+    setAutocompleteForm(autocomplete);
     setShowSettingsModal(true);
   };
 
   const handleSaveSettingsClick = () => {
-    setDifficulty(tempDifficultyForm);
-    localStorage.setItem(DIFFICULTY_KEY, tempDifficultyForm.toString());
+    setDifficulty(difficultyForm);
+    setAutocomplete(autocompleteForm);
+    localStorage.setItem(DIFFICULTY_KEY, difficultyForm.toString());
+    localStorage.setItem(AUTOCOMPLETE_KEY, autocompleteForm.toString());
     setShowSettingsModal(false);
   };
 
@@ -327,8 +342,10 @@ export default function Home() {
       <SettingsModal
         open={showSettingsModal}
         onOpenChange={setShowSettingsModal}
-        tempDifficultyForm={tempDifficultyForm}
-        setTempDifficultyForm={setTempDifficultyForm}
+        autocomplete={autocompleteForm}
+        setAutocomplete={setAutocompleteForm}
+        tempDifficultyForm={difficultyForm}
+        setTempDifficultyForm={setDifficultyForm}
         handleSaveSettingsClick={handleSaveSettingsClick}
       />
     </div>

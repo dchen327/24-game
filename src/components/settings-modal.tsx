@@ -13,12 +13,15 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "./ui/checkbox";
 
 type SettingsModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   tempDifficultyForm: number;
   setTempDifficultyForm: (value: number) => void;
+  autocomplete: boolean;
+  setAutocomplete: (value: boolean) => void;
   handleSaveSettingsClick: () => void;
 };
 
@@ -27,6 +30,8 @@ export function SettingsModal({
   onOpenChange,
   tempDifficultyForm,
   setTempDifficultyForm,
+  autocomplete,
+  setAutocomplete,
   handleSaveSettingsClick,
 }: SettingsModalProps) {
   return (
@@ -36,34 +41,48 @@ export function SettingsModal({
           <DialogTitle className="text-2xl">Settings</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="font-semibold text-right text-lg">
+          <div className="grid grid-cols-2 items-center gap-4">
+            <Label htmlFor="difficulty" className="font-semibold text-xl">
               Difficulty:
             </Label>
             <Select
               value={tempDifficultyForm.toString()}
               onValueChange={(value) => setTempDifficultyForm(Number(value))}
             >
-              <SelectTrigger className="col-span-3 text-lg">
+              <SelectTrigger className="text-xl">
                 <SelectValue placeholder="Select difficulty" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0" className="text-lg py-3">
+                <SelectItem value="0" className="text-xl py-3">
                   Easy
                 </SelectItem>
-                <SelectItem value="1" className="text-lg py-3">
+                <SelectItem value="1" className="text-xl py-3">
                   Medium
                 </SelectItem>
-                <SelectItem value="2" className="text-lg py-3">
+                <SelectItem value="2" className="text-xl py-3">
                   Hard
                 </SelectItem>
               </SelectContent>
             </Select>
           </div>
+          <div className="grid grid-cols-2 items-center gap-4">
+            <Label htmlFor="autocomplete" className="font-semibold text-xl">
+              Autocomplete:
+            </Label>
+            <div className="flex justify-end">
+              <Checkbox
+                id="autocomplete"
+                checked={autocomplete}
+                onCheckedChange={setAutocomplete}
+                aria-label="Toggle autocomplete"
+                className="scale-125"
+              />
+            </div>
+          </div>
         </div>
         <Button
           onClick={handleSaveSettingsClick}
-          className="bg-blue-500 text-lg hover:bg-blue-600 py-6"
+          className="bg-blue-500 text-xl hover:bg-blue-600 py-7"
         >
           Save changes
         </Button>
