@@ -19,14 +19,23 @@ import { gameUtils } from "@/components/game-utils";
 const DIFFICULTY_KEY = "game-difficulty";
 
 export default function Home() {
+  const getInitialDifficulty = (): number => {
+    const storedDifficulty = localStorage.getItem(DIFFICULTY_KEY);
+    if (storedDifficulty !== null) {
+      return parseInt(storedDifficulty);
+    }
+    return 1; // Default to medium if no valid stored difficulty
+  };
   // initially shuffle puzzles (3 lists easy, med, hard)
   const [puzzles, setPuzzles] = useState<Fraction[][][]>([]);
   const [loading, setLoading] = useState<boolean>(true); // for loading puzzles
-  const [difficulty, setDifficulty] = useState<number>(1); // 0-2
+  const [difficulty, setDifficulty] = useState<number>(() =>
+    getInitialDifficulty()
+  ); // 0-2 (easy-hard)
   const [tempPuzzleDifficulty, setTempPuzzleDifficulty] = useState<
     number | null
   >(null); // for when randomly adding another question from another difficulty
-  const [tempDifficultyForm, setTempDifficultyForm] = useState<number>(0); // for settings form
+  const [tempDifficultyForm, setTempDifficultyForm] = useState<number>(1); // for settings form
   const difficulties = ["Easy", "Medium", "Hard"];
   const [puzzleIdxs, setPuzzleIdxs] = useState<number[]>([0, 0, 0]);
   const [gameNums, setGameNums] = useState<GameNum[]>([null, null, null, null]);
