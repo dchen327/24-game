@@ -14,6 +14,9 @@ import { useEffect, useState } from "react";
 import { SettingsModal } from "@/components/settings-modal";
 import { GameNum } from "@/types/game-types";
 import { SolvedModal } from "@/components/solved-modal";
+import { gameUtils } from "@/components/game-utils";
+
+const DIFFICULTY_KEY = "game-difficulty";
 
 export default function Home() {
   // initially shuffle puzzles (3 lists easy, med, hard)
@@ -36,51 +39,38 @@ export default function Home() {
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const randomProb = 0.15; // TODO: make this a setting
 
-  const findSoln24 = (num1: Fraction, num2: Fraction): string | null => {
-    const operations = [
-      { fn: () => num1.add(num2), symbol: "+" },
-      { fn: () => num1.sub(num2), symbol: "−" },
-      { fn: () => num2.sub(num1), symbol: "−", reverse: true },
-      { fn: () => num1.mul(num2), symbol: "×" },
-      { fn: () => (num2.valueOf() !== 0 ? num1.div(num2) : null), symbol: "÷" },
-      {
-        fn: () => (num1.valueOf() !== 0 ? num2.div(num1) : null),
-        symbol: "÷",
-        reverse: true,
-      },
-    ];
-
-    for (const op of operations) {
-      const result = op.fn();
-      if (result?.equals(24)) {
-        const n1 = op.reverse ? num2.toFraction() : num1.toFraction();
-        const n2 = op.reverse ? num1.toFraction() : num2.toFraction();
-        return `${n1} ${op.symbol} ${n2} = 24`;
-      }
-    }
-
-    return null;
-  };
-
-  // Load puzzles
+  // Load initial data: puzzles and stored difficulty
   useEffect(() => {
-    // shuffle puzzles initially
-    const puzzles = puzzlesImport.map((puzzleSet) =>
-      shuffle(
-        puzzleSet.map((puzzle) =>
-          puzzle.split(" ").map((num) => new Fraction(num))
+    const loadInitialData = () => {
+      // Load puzzles
+      const puzzles = puzzlesImport.map((puzzleSet) =>
+        gameUtils.shuffle(
+          puzzleSet.map((puzzle) =>
+            puzzle.split(" ").map((num) => new Fraction(num))
+          )
         )
-      )
-    );
-    setPuzzles(puzzles);
-    setLoading(false);
+      );
+      setPuzzles(puzzles);
+
+      // Load stored difficulty
+      const storedDifficulty = localStorage.getItem(DIFFICULTY_KEY);
+      if (storedDifficulty !== null) {
+        setDifficulty(parseInt(storedDifficulty));
+      }
+
+      setLoading(false);
+    };
+
+    loadInitialData();
   }, []);
 
   // Display new puzzle
   useEffect(() => {
     if (loading) return;
     const currDifficulty = tempPuzzleDifficulty ?? difficulty;
-    const gameNums = shuffle(puzzles[currDifficulty][puzzleIdxs[difficulty]]);
+    const gameNums = gameUtils.shuffle(
+      puzzles[currDifficulty][puzzleIdxs[difficulty]]
+    );
     setGameNums(gameNums);
     setGameHistory([gameNums]);
   }, [difficulty, puzzleIdxs, puzzles, loading, tempPuzzleDifficulty]);
@@ -97,21 +87,13 @@ export default function Home() {
       const nonNull = gameNums.filter((num) => num !== null);
       const num1 = nonNull[0]!;
       const num2 = nonNull[1]!;
-      const soln = findSoln24(num1, num2);
+      const soln = gameUtils.checkLastTwoNums(num1, num2);
       if (soln) {
         setSolveSteps((prevSteps) => [...prevSteps, soln]);
         setShowSolvedModal(true);
       }
     }
   }, [gameNums]);
-
-  function shuffle<T>(array: T[]): T[] {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  }
 
   const handleOutsideClick = () => {
     setSelectedNumIdx(null);
@@ -218,6 +200,7 @@ export default function Home() {
 
   const handleSaveSettingsClick = () => {
     setDifficulty(tempDifficultyForm);
+    localStorage.setItem(DIFFICULTY_KEY, tempDifficultyForm.toString());
     setShowSettingsModal(false);
   };
 
@@ -236,7 +219,7 @@ export default function Home() {
     };
 
     do {
-      shuffledNums = shuffle([...gameNums]);
+      shuffledNums = gameUtils.shuffle([...gameNums]);
       attempts++;
     } while (areArraysEqual(shuffledNums, gameNums) && attempts < maxAttempts);
 
