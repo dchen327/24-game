@@ -15,24 +15,29 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { DialogDescription } from "@radix-ui/react-dialog";
+import { Slider } from "./ui/slider";
 
 type SettingsModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  tempDifficultyForm: number;
-  setTempDifficultyForm: (value: number) => void;
-  autocomplete: boolean;
-  setAutocomplete: (value: boolean) => void;
+  difficultyForm: number;
+  setDifficultyForm: (value: number) => void;
+  autocompleteForm: boolean;
+  setAutocompleteForm: (value: boolean) => void;
+  randomProbForm: number[];
+  setRandomProbForm: (value: number[]) => void;
   handleSaveSettingsClick: () => void;
 };
 
 export function SettingsModal({
   open,
   onOpenChange,
-  tempDifficultyForm,
-  setTempDifficultyForm,
-  autocomplete,
-  setAutocomplete,
+  difficultyForm,
+  setDifficultyForm,
+  autocompleteForm,
+  setAutocompleteForm,
+  randomProbForm,
+  setRandomProbForm,
   handleSaveSettingsClick,
 }: SettingsModalProps) {
   return (
@@ -42,14 +47,14 @@ export function SettingsModal({
           <DialogTitle className="text-2xl">Settings</DialogTitle>
         </DialogHeader>
         <DialogDescription />
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-4 py-4 mb-2">
           <div className="grid grid-cols-2 items-center gap-4">
             <Label htmlFor="difficulty" className="font-semibold text-xl">
               Difficulty:
             </Label>
             <Select
-              value={tempDifficultyForm.toString()}
-              onValueChange={(value) => setTempDifficultyForm(Number(value))}
+              value={difficultyForm.toString()}
+              onValueChange={(value) => setDifficultyForm(Number(value))}
             >
               <SelectTrigger className="text-xl">
                 <SelectValue placeholder="Select difficulty" />
@@ -67,19 +72,40 @@ export function SettingsModal({
               </SelectContent>
             </Select>
           </div>
-          <div className="grid grid-cols-2 items-center gap-4">
-            <Label htmlFor="autocomplete" className="font-semibold text-xl">
+          <div className="grid grid-cols-3 items-center gap-4">
+            <Label
+              htmlFor="autocomplete"
+              className="col-span-2 font-semibold text-xl"
+            >
               Autocomplete:
             </Label>
             <div className="flex justify-end">
               <Checkbox
                 id="autocomplete"
-                checked={autocomplete}
-                onCheckedChange={setAutocomplete}
+                checked={autocompleteForm}
+                onCheckedChange={setAutocompleteForm}
                 aria-label="Toggle autocomplete"
                 className="scale-125"
               />
             </div>
+          </div>
+          <div className="grid grid-cols-3 items-center gap-4">
+            <Label
+              htmlFor="randomProb"
+              className="col-span-2 font-semibold text-xl"
+            >
+              Random Probability:
+            </Label>
+            <div className="text-xl text-right">{randomProbForm[0]}</div>
+            <Slider
+              id="randomProb"
+              value={randomProbForm}
+              onValueChange={setRandomProbForm}
+              min={0}
+              max={1}
+              step={0.1}
+              className="col-span-3 w-full"
+            />
           </div>
         </div>
         <Button
