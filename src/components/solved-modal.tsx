@@ -39,7 +39,10 @@ export function SolvedModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent onInteractOutside={handleNewPuzzleClick}>
+      <DialogContent
+        onInteractOutside={handleNewPuzzleClick}
+        className="max-h-screen"
+      >
         <DialogHeader>
           <DialogTitle className="text-2xl">Congratulations!</DialogTitle>
         </DialogHeader>
@@ -47,8 +50,8 @@ export function SolvedModal({
         <div className="text-center text-xl font-normal">
           Actual Difficulty: {difficulty}
         </div>
-        <div className="flex-1 flex flex-col items-center justify-center px-4 mx-10">
-          <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
+        <div className="flex-1 flex flex-col items-center justify-center px-4 mx-10 max-h-[25vh]">
+          <div className="grid grid-cols-2 gap-4 min-w-[250px]">
             {gameHistory[0]?.map((num, index) => (
               <button
                 key={index}
