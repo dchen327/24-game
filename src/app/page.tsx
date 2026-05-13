@@ -10,7 +10,7 @@ import {
   Shuffle,
 } from "lucide-react";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SettingsModal } from "@/components/settings-modal";
 import { GameNum } from "@/types/game-types";
 import { SolvedModal } from "@/components/solved-modal";
@@ -20,6 +20,21 @@ const DIFFICULTY_KEY = "game-difficulty";
 const AUTOCOMPLETE_KEY = "game-autocomplete";
 const RANDOM_PROB_KEY = "game-random-prob";
 const VIBRATE_KEY = "game-vibrate";
+const GAME_STATE_KEY = "game-state";
+
+type SerializedGameNum = string | null;
+type SerializedGameState = {
+  gameNums: SerializedGameNum[];
+  gameHistory: SerializedGameNum[][];
+  solveSteps: string[];
+  tempPuzzleDifficulty: number | null;
+};
+
+const serializeNums = (nums: GameNum[]): SerializedGameNum[] =>
+  nums.map((n) => (n ? n.toFraction() : null));
+
+const deserializeNums = (nums: SerializedGameNum[]): GameNum[] =>
+  nums.map((s) => (s ? new Fraction(s) : null));
 
 export default function Home() {
   // Initially shuffle puzzles (3 lists easy, med, hard)
@@ -52,6 +67,11 @@ export default function Home() {
     if (vibrateEnabled) gameUtils.vibrate();
   };
 
+  // True only on the first render after restoring saved game state, so the
+  // "display new puzzle" effect doesn't immediately clobber the restored
+  // gameNums/history with a fresh shuffle.
+  const restoredFromStorage = useRef(false);
+
   // Load initial data: puzzles and stored difficulty
   useEffect(() => {
     const loadInitialData = () => {
@@ -83,6 +103,20 @@ export default function Home() {
         setVibrateEnabled(storedVibrate === "true");
       }
 
+      const storedGameState = localStorage.getItem(GAME_STATE_KEY);
+      if (storedGameState !== null) {
+        try {
+          const parsed: SerializedGameState = JSON.parse(storedGameState);
+          setGameNums(deserializeNums(parsed.gameNums));
+          setGameHistory(parsed.gameHistory.map(deserializeNums));
+          setSolveSteps(parsed.solveSteps);
+          setTempPuzzleDifficulty(parsed.tempPuzzleDifficulty);
+          restoredFromStorage.current = true;
+        } catch {
+          // corrupt entry — fall back to the normal fresh-puzzle flow
+        }
+      }
+
       setLoading(false);
     };
 
@@ -92,6 +126,10 @@ export default function Home() {
   // Display new puzzle
   useEffect(() => {
     if (loading) return;
+    if (restoredFromStorage.current) {
+      restoredFromStorage.current = false;
+      return;
+    }
     const currDifficulty = tempPuzzleDifficulty ?? difficulty;
     const gameNums = gameUtils.shuffle(
       puzzles[currDifficulty][puzzleIdxs[currDifficulty]]
@@ -99,6 +137,19 @@ export default function Home() {
     setGameNums(gameNums);
     setGameHistory([gameNums]);
   }, [difficulty, puzzleIdxs, puzzles, loading, tempPuzzleDifficulty]);
+
+  // Persist current game state so the same puzzle (and any in-progress work)
+  // is restored when Android kills and relaunches the PWA process.
+  useEffect(() => {
+    if (loading) return;
+    const payload: SerializedGameState = {
+      gameNums: serializeNums(gameNums),
+      gameHistory: gameHistory.map(serializeNums),
+      solveSteps,
+      tempPuzzleDifficulty,
+    };
+    localStorage.setItem(GAME_STATE_KEY, JSON.stringify(payload));
+  }, [gameNums, gameHistory, solveSteps, tempPuzzleDifficulty, loading]);
 
   // Check if solved
   useEffect(() => {
