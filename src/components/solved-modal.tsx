@@ -38,11 +38,20 @@ export function SolvedModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        onInteractOutside={handleNewPuzzleClick}
-        className="max-h-screen"
-      >
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        // Any close path (X button, Esc key, click outside) advances to the
+        // next puzzle so the user is never left looking at the post-solve
+        // board state (one tile = 24, others null).
+        if (!nextOpen) {
+          handleNewPuzzleClick();
+          return;
+        }
+        onOpenChange(nextOpen);
+      }}
+    >
+      <DialogContent className="max-h-screen">
         <DialogHeader>
           <DialogTitle className="text-2xl">Congratulations!</DialogTitle>
         </DialogHeader>
