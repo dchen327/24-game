@@ -19,6 +19,7 @@ import { gameUtils } from "@/components/game-utils";
 const DIFFICULTY_KEY = "game-difficulty";
 const AUTOCOMPLETE_KEY = "game-autocomplete";
 const RANDOM_PROB_KEY = "game-random-prob";
+const VIBRATE_KEY = "game-vibrate";
 
 export default function Home() {
   // Initially shuffle puzzles (3 lists easy, med, hard)
@@ -40,10 +41,16 @@ export default function Home() {
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const [autocomplete, setAutocomplete] = useState<boolean>(true);
   const [randomProb, setRandomProb] = useState<number>(0.2);
+  const [vibrateEnabled, setVibrateEnabled] = useState<boolean>(true);
   // Settings form
   const [difficultyForm, setDifficultyForm] = useState<number>(1);
   const [autocompleteForm, setAutocompleteForm] = useState<boolean>(true);
   const [randomProbForm, setRandomProbForm] = useState<number[]>([0.2]);
+  const [vibrateForm, setVibrateForm] = useState<boolean>(true);
+
+  const vibrate = () => {
+    if (vibrateEnabled) gameUtils.vibrate();
+  };
 
   // Load initial data: puzzles and stored difficulty
   useEffect(() => {
@@ -70,6 +77,10 @@ export default function Home() {
       const storedRandomProb = localStorage.getItem(RANDOM_PROB_KEY);
       if (storedRandomProb !== null) {
         setRandomProb(parseFloat(storedRandomProb));
+      }
+      const storedVibrate = localStorage.getItem(VIBRATE_KEY);
+      if (storedVibrate !== null) {
+        setVibrateEnabled(storedVibrate === "true");
       }
 
       setLoading(false);
@@ -119,6 +130,7 @@ export default function Home() {
   };
 
   const handleNumClick = (index: number) => {
+    vibrate();
     if (index === selectededNumIdx) {
       setSelectedNumIdx(null);
       return;
@@ -166,10 +178,12 @@ export default function Home() {
   };
 
   const handleOpClick = (index: number) => {
+    vibrate();
     setSelectedOpIdx(index === selectedOpIdx ? null : index);
   };
 
   const handleUndoClick = () => {
+    vibrate();
     if (gameHistory.length === 0) return;
     const prevGameNums = gameHistory[gameHistory.length - 1];
     setGameNums(prevGameNums);
@@ -180,6 +194,7 @@ export default function Home() {
   };
 
   const handleNewPuzzleClick = (): void => {
+    vibrate();
     setShowSolvedModal(false);
     const newPuzzleIdxs = [...puzzleIdxs];
     if (difficulty > 0 && Math.random() < randomProb) {
@@ -204,13 +219,16 @@ export default function Home() {
   };
 
   const handleHintClick = () => {
+    vibrate();
     console.log("hint");
   };
 
   const handleOpenSettingsModal = () => {
+    vibrate();
     setDifficultyForm(difficulty);
     setAutocompleteForm(autocomplete);
     setRandomProbForm([randomProb]);
+    setVibrateForm(vibrateEnabled);
     setShowSettingsModal(true);
   };
 
@@ -218,13 +236,16 @@ export default function Home() {
     setDifficulty(difficultyForm);
     setAutocomplete(autocompleteForm);
     setRandomProb(randomProbForm[0]);
+    setVibrateEnabled(vibrateForm);
     localStorage.setItem(DIFFICULTY_KEY, difficultyForm.toString());
     localStorage.setItem(AUTOCOMPLETE_KEY, autocompleteForm.toString());
     localStorage.setItem(RANDOM_PROB_KEY, randomProbForm[0].toString());
+    localStorage.setItem(VIBRATE_KEY, vibrateForm.toString());
     setShowSettingsModal(false);
   };
 
   const handleShuffleClick = () => {
+    vibrate();
     const maxAttempts = 10; // Limit the number of shuffle attempts
     let shuffledNums = [...gameNums];
     let attempts = 0;
@@ -354,6 +375,8 @@ export default function Home() {
         setDifficultyForm={setDifficultyForm}
         randomProbForm={randomProbForm}
         setRandomProbForm={setRandomProbForm}
+        vibrateForm={vibrateForm}
+        setVibrateForm={setVibrateForm}
         handleSaveSettingsClick={handleSaveSettingsClick}
       />
     </div>

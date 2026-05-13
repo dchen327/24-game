@@ -40,4 +40,10 @@ export const gameUtils = {
     }
     return newArray;
   },
+
+  vibrate(ms: number = 10): void {
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      navigator.vibrate(ms);
+    }
+  },
 };

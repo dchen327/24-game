@@ -32,6 +32,8 @@ type SettingsModalProps = {
   setAutocompleteForm: (value: boolean) => void;
   randomProbForm: number[];
   setRandomProbForm: (value: number[]) => void;
+  vibrateForm: boolean;
+  setVibrateForm: (value: boolean) => void;
   handleSaveSettingsClick: () => void;
 };
 
@@ -44,6 +46,8 @@ export function SettingsModal({
   setAutocompleteForm,
   randomProbForm,
   setRandomProbForm,
+  vibrateForm,
+  setVibrateForm,
   handleSaveSettingsClick,
 }: SettingsModalProps) {
   return (
@@ -133,6 +137,23 @@ export function SettingsModal({
               step={0.1}
               className="col-span-3 w-full"
             />
+          </div>
+          <div className="grid grid-cols-3 items-center gap-4">
+            <Label
+              htmlFor="vibrate"
+              className="col-span-2 font-semibold text-xl"
+            >
+              Vibration:
+            </Label>
+            <div className="flex justify-end">
+              <Checkbox
+                id="vibrate"
+                checked={vibrateForm}
+                onCheckedChange={setVibrateForm}
+                aria-label="Toggle vibration"
+                className="scale-125"
+              />
+            </div>
           </div>
         </div>
         <Button
