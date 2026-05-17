@@ -34,8 +34,8 @@ type SettingsModalProps = {
   setRandomProbForm: (value: number[]) => void;
   vibrateForm: boolean;
   setVibrateForm: (value: boolean) => void;
-  flatModeForm: boolean;
-  setFlatModeForm: (value: boolean) => void;
+  tabletopModeForm: boolean;
+  setTabletopModeForm: (value: boolean) => void;
   handleSaveSettingsClick: () => void;
 };
 
@@ -50,8 +50,8 @@ export function SettingsModal({
   setRandomProbForm,
   vibrateForm,
   setVibrateForm,
-  flatModeForm,
-  setFlatModeForm,
+  tabletopModeForm,
+  setTabletopModeForm,
   handleSaveSettingsClick,
 }: SettingsModalProps) {
   return (
@@ -161,28 +161,30 @@ export function SettingsModal({
           </div>
           <div className="grid grid-cols-3 items-center gap-4">
             <Label
-              htmlFor="flatMode"
+              htmlFor="tabletopMode"
               className="col-span-2 font-semibold text-xl"
             >
-              Flat mode:
+              Tabletop mode:
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" className="h-8 w-8 p-0">
                     <InfoIcon className="h-5 w-5" />
-                    <span className="sr-only">Flat Mode Info</span>
+                    <span className="sr-only">Tabletop Mode Info</span>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-full border border-black p-2">
-                  <p>Rotate each digit to face its corner viewer</p>
+                  <p>
+                    Numbers are rotated to enable viewing from all sides
+                  </p>
                 </PopoverContent>
               </Popover>
             </Label>
             <div className="flex justify-end">
               <Checkbox
-                id="flatMode"
-                checked={flatModeForm}
-                onCheckedChange={setFlatModeForm}
-                aria-label="Toggle flat mode"
+                id="tabletopMode"
+                checked={tabletopModeForm}
+                onCheckedChange={setTabletopModeForm}
+                aria-label="Toggle tabletop mode"
                 className="scale-125"
               />
             </div>

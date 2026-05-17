@@ -24,11 +24,11 @@ const RANDOM_PROB_KEY = "game-random-prob";
 const VIBRATE_KEY = "game-vibrate";
 const GAME_STATE_KEY = "game-state";
 const TOTAL_SOLVED_KEY = "game-total-solved";
-const FLAT_MODE_KEY = "game-flat-mode";
+const TABLETOP_MODE_KEY = "game-tabletop-mode";
+const TABLETOP_MODE_KEY_LEGACY = "game-flat-mode";
 
-// Per-tile text rotations for flat / multiplayer mode. Each digit faces its
-// own corner viewer (clockwise from top-left).
-const FLAT_TILE_ROTATIONS = [
+// Per-tile text rotations for tabletop mode. Each digit faces its corner viewer.
+const TABLETOP_TILE_ROTATIONS = [
   "-rotate-45", // top-left tile -> top-left viewer
   "rotate-45", // top-right tile -> top-right viewer
   "-rotate-[135deg]", // bottom-left tile -> bottom-left viewer
@@ -75,13 +75,13 @@ export default function Home() {
   const [vibrateEnabled, setVibrateEnabled] = useState<boolean>(true);
   const [totalSolved, setTotalSolved] = useState<number>(0);
   const [puzzleCounted, setPuzzleCounted] = useState<boolean>(false);
-  const [flatMode, setFlatMode] = useState<boolean>(false);
+  const [tabletopMode, setTabletopMode] = useState<boolean>(false);
   // Settings form
   const [difficultyForm, setDifficultyForm] = useState<number>(1);
   const [autocompleteForm, setAutocompleteForm] = useState<boolean>(true);
   const [randomProbForm, setRandomProbForm] = useState<number[]>([0.2]);
   const [vibrateForm, setVibrateForm] = useState<boolean>(true);
-  const [flatModeForm, setFlatModeForm] = useState<boolean>(false);
+  const [tabletopModeForm, setTabletopModeForm] = useState<boolean>(false);
 
   const vibrate = () => {
     if (vibrateEnabled) gameUtils.vibrate();
@@ -150,9 +150,16 @@ export default function Home() {
         const parsed = parseInt(storedTotalSolved, 10);
         if (!Number.isNaN(parsed)) setTotalSolved(parsed);
       }
-      const storedFlatMode = localStorage.getItem(FLAT_MODE_KEY);
-      if (storedFlatMode !== null) {
-        setFlatMode(storedFlatMode === "true");
+      let storedTabletopMode = localStorage.getItem(TABLETOP_MODE_KEY);
+      if (storedTabletopMode === null) {
+        storedTabletopMode = localStorage.getItem(TABLETOP_MODE_KEY_LEGACY);
+        if (storedTabletopMode !== null) {
+          localStorage.setItem(TABLETOP_MODE_KEY, storedTabletopMode);
+          localStorage.removeItem(TABLETOP_MODE_KEY_LEGACY);
+        }
+      }
+      if (storedTabletopMode !== null) {
+        setTabletopMode(storedTabletopMode === "true");
       }
 
       const storedGameState = localStorage.getItem(GAME_STATE_KEY);
@@ -391,7 +398,7 @@ export default function Home() {
     setAutocompleteForm(autocomplete);
     setRandomProbForm([randomProb]);
     setVibrateForm(vibrateEnabled);
-    setFlatModeForm(flatMode);
+    setTabletopModeForm(tabletopMode);
     setShowSettingsModal(true);
   };
 
@@ -400,12 +407,12 @@ export default function Home() {
     setAutocomplete(autocompleteForm);
     setRandomProb(randomProbForm[0]);
     setVibrateEnabled(vibrateForm);
-    setFlatMode(flatModeForm);
+    setTabletopMode(tabletopModeForm);
     localStorage.setItem(DIFFICULTY_KEY, difficultyForm.toString());
     localStorage.setItem(AUTOCOMPLETE_KEY, autocompleteForm.toString());
     localStorage.setItem(RANDOM_PROB_KEY, randomProbForm[0].toString());
     localStorage.setItem(VIBRATE_KEY, vibrateForm.toString());
-    localStorage.setItem(FLAT_MODE_KEY, flatModeForm.toString());
+    localStorage.setItem(TABLETOP_MODE_KEY, tabletopModeForm.toString());
     setShowSettingsModal(false);
   };
 
@@ -455,7 +462,7 @@ export default function Home() {
           className="relative grid grid-cols-2 gap-4 w-full max-w-md px-4 mx-4 "
           onClick={(e) => e.stopPropagation()}
         >
-          {flatMode && (
+          {tabletopMode && (
             <>
               {/* Center diamond - each edge sits under one digit as a baseline */}
               <div
@@ -485,7 +492,9 @@ export default function Home() {
               >
                 <span
                   className={
-                    flatMode ? `inline-block ${FLAT_TILE_ROTATIONS[index]}` : ""
+                    tabletopMode
+                      ? `inline-block ${TABLETOP_TILE_ROTATIONS[index]}`
+                      : ""
                   }
                 >
                   {num?.toFraction()}
@@ -575,8 +584,8 @@ export default function Home() {
         setRandomProbForm={setRandomProbForm}
         vibrateForm={vibrateForm}
         setVibrateForm={setVibrateForm}
-        flatModeForm={flatModeForm}
-        setFlatModeForm={setFlatModeForm}
+        tabletopModeForm={tabletopModeForm}
+        setTabletopModeForm={setTabletopModeForm}
         handleSaveSettingsClick={handleSaveSettingsClick}
       />
       <HintModal
