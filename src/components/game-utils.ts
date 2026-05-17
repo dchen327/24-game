@@ -1,5 +1,33 @@
 import Fraction from "fraction.js";
 
+export type SolveStep = {
+  a: Fraction;
+  op: "+" | "−" | "×" | "÷";
+  b: Fraction;
+  result: Fraction;
+};
+
+const TARGET = new Fraction(24);
+
+const tryOp = (
+  a: Fraction,
+  b: Fraction,
+  opIdx: number
+): { result: Fraction; symbol: SolveStep["op"] } | null => {
+  switch (opIdx) {
+    case 0:
+      return { result: a.add(b), symbol: "+" };
+    case 1:
+      return { result: a.sub(b), symbol: "−" };
+    case 2:
+      return { result: a.mul(b), symbol: "×" };
+    case 3:
+      if (b.valueOf() === 0) return null;
+      return { result: a.div(b), symbol: "÷" };
+  }
+  return null;
+};
+
 export const gameUtils = {
   /**
    * Attempts to find a solution that equals 24 using two numbers
@@ -45,5 +73,53 @@ export const gameUtils = {
     if (typeof navigator !== "undefined" && "vibrate" in navigator) {
       navigator.vibrate(ms);
     }
+  },
+
+  /**
+   * Recursively try to reach 24 by combining `nums` two at a time. Returns
+   * the sequence of operations in execution order (step 0 is the deepest
+   * combination — the "truly first step"), or null if no solution exists.
+   *
+   * Iteration order is randomized so that puzzles with multiple distinct
+   * first-step branches don't always surface the same one.
+   */
+  solve(nums: Fraction[]): SolveStep[] | null {
+    if (nums.length === 1) {
+      return nums[0].equals(TARGET) ? [] : null;
+    }
+
+    const pairs: [number, number][] = [];
+    for (let i = 0; i < nums.length; i++) {
+      for (let j = i + 1; j < nums.length; j++) {
+        pairs.push([i, j]);
+      }
+    }
+    const shuffledPairs = gameUtils.shuffle(pairs);
+    const shuffledOps = gameUtils.shuffle([0, 1, 2, 3]);
+
+    for (const [i, j] of shuffledPairs) {
+      const a = nums[i];
+      const b = nums[j];
+      const rest = nums.filter((_, k) => k !== i && k !== j);
+      const orderings: [Fraction, Fraction][] = gameUtils.shuffle([
+        [a, b],
+        [b, a],
+      ]);
+
+      for (const [first, second] of orderings) {
+        for (const op of shuffledOps) {
+          const r = tryOp(first, second, op);
+          if (!r) continue;
+          const sub = gameUtils.solve([...rest, r.result]);
+          if (sub !== null) {
+            return [
+              { a: first, op: r.symbol, b: second, result: r.result },
+              ...sub,
+            ];
+          }
+        }
+      }
+    }
+    return null;
   },
 };

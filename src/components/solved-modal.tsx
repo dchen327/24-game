@@ -51,27 +51,29 @@ export function SolvedModal({
         onOpenChange(nextOpen);
       }}
     >
-      <DialogContent className="max-h-screen">
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Congratulations!</DialogTitle>
+          <DialogTitle className="text-xl sm:text-2xl">
+            Congratulations!
+          </DialogTitle>
         </DialogHeader>
         <DialogDescription />
-        <div className="text-center text-xl font-normal">
+        <div className="text-center text-base sm:text-xl font-normal">
           Actual Difficulty: {difficulty}
         </div>
-        <div className="flex-1 flex flex-col items-center justify-center px-4 mx-10 max-h-[25vh]">
-          <div className="grid grid-cols-2 gap-4 min-w-[250px]">
+        <div className="flex flex-col items-center">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-[280px]">
             {gameHistory[0]?.map((num, index) => (
               <button
                 key={index}
-                className="aspect-square rounded-2xl flex items-center justify-center text-5xl font-medium bg-gray-100"
+                className="aspect-square rounded-2xl flex items-center justify-center text-3xl sm:text-5xl font-medium bg-gray-100"
               >
                 {num?.valueOf()}
               </button>
             ))}
           </div>
         </div>
-        <div className="grid gap-4 mx-auto p-4">
+        <div className="grid gap-2 sm:gap-4 mx-auto px-2 sm:p-4 w-full max-w-[320px]">
           {solveSteps.map((step, idx) => {
             const { A, op, B, C } = parseEquation(step);
             return (
@@ -87,7 +89,7 @@ export function SolvedModal({
         </div>
         <DialogFooter>
           <Button
-            className="bg-blue-500 text-xl hover:bg-blue-600 py-7"
+            className="bg-blue-500 text-lg sm:text-xl hover:bg-blue-600 py-4 sm:py-7"
             onClick={handleNewPuzzleClick}
           >
             Continue

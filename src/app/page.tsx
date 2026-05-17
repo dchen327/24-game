@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { useEffect, useRef, useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 import { SettingsModal } from "@/components/settings-modal";
 import { GameNum } from "@/types/game-types";
 import { SolvedModal } from "@/components/solved-modal";
@@ -71,6 +72,10 @@ export default function Home() {
   // "display new puzzle" effect doesn't immediately clobber the restored
   // gameNums/history with a fresh shuffle.
   const restoredFromStorage = useRef(false);
+
+  // Indices of the two tiles to glow as a hint, or null when no hint is
+  // active. Cleared automatically whenever gameNums changes.
+  const [hintIndices, setHintIndices] = useState<[number, number] | null>(null);
 
   // Load initial data: puzzles and stored difficulty
   useEffect(() => {
@@ -150,6 +155,12 @@ export default function Home() {
     };
     localStorage.setItem(GAME_STATE_KEY, JSON.stringify(payload));
   }, [gameNums, gameHistory, solveSteps, tempPuzzleDifficulty, loading]);
+
+  // Any change to gameNums (a move, undo, new puzzle, restore) invalidates
+  // any visible hint.
+  useEffect(() => {
+    setHintIndices(null);
+  }, [gameNums]);
 
   // Check if solved
   useEffect(() => {
@@ -271,7 +282,25 @@ export default function Home() {
 
   const handleHintClick = () => {
     vibrate();
-    console.log("hint");
+    // Pressing Hint again while a hint is already showing is a no-op.
+    if (hintIndices !== null) return;
+    // Hint is only meaningful before the user has taken any steps; otherwise
+    // "first step" semantics no longer apply.
+    if (gameHistory.length > 1) {
+      toast("Hint only works before any steps are taken.");
+      return;
+    }
+    const nums = gameNums.filter((n): n is Fraction => n !== null);
+    const solution = gameUtils.solve(nums);
+    if (!solution || solution.length === 0) return;
+    const { a, b } = solution[0];
+    const aIdx = gameNums.findIndex((n) => n !== null && n.equals(a));
+    if (aIdx === -1) return;
+    const bIdx = gameNums.findIndex(
+      (n, i) => i !== aIdx && n !== null && n.equals(b)
+    );
+    if (bIdx === -1) return;
+    setHintIndices([aIdx, bIdx]);
   };
 
   const handleOpenSettingsModal = () => {
@@ -336,22 +365,32 @@ export default function Home() {
       {/* Game Grid */}
       <div className="flex-1 flex flex-col items-center justify-center">
         <div
-          className="grid grid-cols-2 gap-4 w-full max-w-sm px-4 mx-4 "
+          className="grid grid-cols-2 gap-4 w-full max-w-md px-4 mx-4 "
           onClick={(e) => e.stopPropagation()}
         >
-          {gameNums.map((num, index) => (
-            <button
-              key={index}
-              className={`aspect-square rounded-2xl flex items-center justify-center text-7xl font-medium ${
-                selectededNumIdx === index && gameNums[index] !== null
-                  ? "bg-blue-100 border-2 border-gray-600"
-                  : "bg-gray-100"
-              }`}
-              onClick={() => handleNumClick(index)}
-            >
-              {num?.toFraction()}
-            </button>
-          ))}
+          {gameNums.map((num, index) => {
+            const isSelected =
+              selectededNumIdx === index && gameNums[index] !== null;
+            const isHinted =
+              !isSelected &&
+              hintIndices !== null &&
+              (hintIndices[0] === index || hintIndices[1] === index);
+            return (
+              <button
+                key={index}
+                className={`aspect-square rounded-2xl flex items-center justify-center text-7xl font-medium ${
+                  isSelected
+                    ? "bg-blue-100 border-2 border-gray-600"
+                    : isHinted
+                    ? "bg-yellow-100 border-2 border-yellow-400"
+                    : "bg-gray-100"
+                }`}
+                onClick={() => handleNumClick(index)}
+              >
+                {num?.toFraction()}
+              </button>
+            );
+          })}
         </div>
 
         {/* Operation Buttons */}
@@ -362,7 +401,7 @@ export default function Home() {
           {operations.map((op, index) => (
             <button
               key={index}
-              className={`text-5xl pb-12 pt-16 px-10 flex items-center justify-center max-w-24 max-h-24 ${
+              className={`text-5xl pb-12 pt-16 px-10 flex items-center justify-center max-w-28 max-h-28 ${
                 selectedOpIdx === index
                   ? "after:absolute after:w-16 after:h-16 after:border-2 after:border-gray-600 after:rounded-full"
                   : ""
@@ -376,7 +415,7 @@ export default function Home() {
       </div>
       {/* Bottom Toolbar */}
       <div className="w-full">
-        <div className="max-w-sm mx-auto py-4 bg-gray-50 rounded-xl">
+        <div className="max-w-md mx-auto py-4 bg-gray-50 rounded-xl">
           <div className="flex justify-around items-center">
             <button
               className="flex flex-col items-center gap-1"
@@ -429,6 +468,10 @@ export default function Home() {
         vibrateForm={vibrateForm}
         setVibrateForm={setVibrateForm}
         handleSaveSettingsClick={handleSaveSettingsClick}
+      />
+      <Toaster
+        position="top-center"
+        toastOptions={{ duration: 2500, style: { fontSize: "1rem" } }}
       />
     </div>
   );
