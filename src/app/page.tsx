@@ -18,6 +18,7 @@ import { SolvedModal } from "@/components/solved-modal";
 import { HintModal } from "@/components/hint-modal";
 import { gameUtils, SolveStep } from "@/components/game-utils";
 import { applyDarkMode, DARK_MODE_KEY } from "@/lib/theme";
+import { ServiceWorkerUpdater } from "@/components/sw-updater";
 
 const DIFFICULTY_KEY = "game-difficulty";
 const AUTOCOMPLETE_KEY = "game-autocomplete";
@@ -628,6 +629,7 @@ export default function Home() {
           style: { fontSize: "1rem" },
         }}
       />
+      <ServiceWorkerUpdater />
     </div>
   );
 }
