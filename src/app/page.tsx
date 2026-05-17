@@ -15,7 +15,8 @@ import toast, { Toaster } from "react-hot-toast";
 import { SettingsModal } from "@/components/settings-modal";
 import { GameNum } from "@/types/game-types";
 import { SolvedModal } from "@/components/solved-modal";
-import { gameUtils } from "@/components/game-utils";
+import { HintModal } from "@/components/hint-modal";
+import { gameUtils, SolveStep } from "@/components/game-utils";
 
 const DIFFICULTY_KEY = "game-difficulty";
 const AUTOCOMPLETE_KEY = "game-autocomplete";
@@ -73,9 +74,28 @@ export default function Home() {
   // gameNums/history with a fresh shuffle.
   const restoredFromStorage = useRef(false);
 
-  // Indices of the two tiles to glow as a hint, or null when no hint is
-  // active. Cleared automatically whenever gameNums changes.
-  const [hintIndices, setHintIndices] = useState<[number, number] | null>(null);
+  // The two values to glow as a "show first two numbers" hint. Stored as
+  // values (not indices) so that a shuffle, which rearranges tile positions
+  // without removing any values, doesn't invalidate the hint — we just look
+  // up where each value currently lives.
+  const [hintPair, setHintPair] = useState<[Fraction, Fraction] | null>(null);
+  // Index of the operation to highlight for a "show first operation" hint.
+  const [hintOpIdx, setHintOpIdx] = useState<number | null>(null);
+  const [showHintModal, setShowHintModal] = useState<boolean>(false);
+
+  // Render-time derivation: where are the hinted values right now?
+  // Returns null if either value has been combined away.
+  const hintIndices: [number, number] | null = (() => {
+    if (!hintPair) return null;
+    const [valA, valB] = hintPair;
+    const aIdx = gameNums.findIndex((n) => n !== null && n.equals(valA));
+    if (aIdx === -1) return null;
+    const bIdx = gameNums.findIndex(
+      (n, i) => i !== aIdx && n !== null && n.equals(valB)
+    );
+    if (bIdx === -1) return null;
+    return [aIdx, bIdx];
+  })();
 
   // Load initial data: puzzles and stored difficulty
   useEffect(() => {
@@ -141,6 +161,8 @@ export default function Home() {
     );
     setGameNums(gameNums);
     setGameHistory([gameNums]);
+    setHintPair(null);
+    setHintOpIdx(null);
   }, [difficulty, puzzleIdxs, puzzles, loading, tempPuzzleDifficulty]);
 
   // Persist current game state so the same puzzle (and any in-progress work)
@@ -155,12 +177,6 @@ export default function Home() {
     };
     localStorage.setItem(GAME_STATE_KEY, JSON.stringify(payload));
   }, [gameNums, gameHistory, solveSteps, tempPuzzleDifficulty, loading]);
-
-  // Any change to gameNums (a move, undo, new puzzle, restore) invalidates
-  // any visible hint.
-  useEffect(() => {
-    setHintIndices(null);
-  }, [gameNums]);
 
   // Check if solved
   useEffect(() => {
@@ -283,24 +299,39 @@ export default function Home() {
   const handleHintClick = () => {
     vibrate();
     // Pressing Hint again while a hint is already showing is a no-op.
-    if (hintIndices !== null) return;
+    if (hintIndices !== null || hintOpIdx !== null) return;
     // Hint is only meaningful before the user has taken any steps; otherwise
     // "first step" semantics no longer apply.
     if (gameHistory.length > 1) {
       toast("Hint only works before any steps are taken.");
       return;
     }
+    setShowHintModal(true);
+  };
+
+  const getFirstStep = (): SolveStep | null => {
     const nums = gameNums.filter((n): n is Fraction => n !== null);
     const solution = gameUtils.solve(nums);
-    if (!solution || solution.length === 0) return;
-    const { a, b } = solution[0];
-    const aIdx = gameNums.findIndex((n) => n !== null && n.equals(a));
-    if (aIdx === -1) return;
-    const bIdx = gameNums.findIndex(
-      (n, i) => i !== aIdx && n !== null && n.equals(b)
-    );
-    if (bIdx === -1) return;
-    setHintIndices([aIdx, bIdx]);
+    if (!solution || solution.length === 0) return null;
+    return solution[0];
+  };
+
+  const handleHintShowOperation = () => {
+    vibrate();
+    const step = getFirstStep();
+    setShowHintModal(false);
+    if (!step) return;
+    const opIdx = operations.indexOf(step.op);
+    if (opIdx === -1) return;
+    setHintOpIdx(opIdx);
+  };
+
+  const handleHintShowPair = () => {
+    vibrate();
+    const step = getFirstStep();
+    setShowHintModal(false);
+    if (!step) return;
+    setHintPair([step.a, step.b]);
   };
 
   const handleOpenSettingsModal = () => {
@@ -398,19 +429,25 @@ export default function Home() {
           className="grid grid-cols-4 gap-0 mx-4 my-4"
           onClick={(e) => e.stopPropagation()}
         >
-          {operations.map((op, index) => (
-            <button
-              key={index}
-              className={`text-5xl pb-12 pt-16 px-10 flex items-center justify-center max-w-28 max-h-28 ${
-                selectedOpIdx === index
-                  ? "after:absolute after:w-16 after:h-16 after:border-2 after:border-gray-600 after:rounded-full"
-                  : ""
-              }`}
-              onClick={() => handleOpClick(index)}
-            >
-              {op}
-            </button>
-          ))}
+          {operations.map((op, index) => {
+            const isOpSelected = selectedOpIdx === index;
+            const isOpHinted = !isOpSelected && hintOpIdx === index;
+            return (
+              <button
+                key={index}
+                className={`text-5xl pb-12 pt-16 px-10 flex items-center justify-center max-w-28 max-h-28 ${
+                  isOpSelected
+                    ? "after:absolute after:w-16 after:h-16 after:border-2 after:border-gray-600 after:rounded-full"
+                    : isOpHinted
+                    ? "after:absolute after:w-16 after:h-16 after:border-2 after:border-yellow-400 after:rounded-full"
+                    : ""
+                }`}
+                onClick={() => handleOpClick(index)}
+              >
+                {op}
+              </button>
+            );
+          })}
         </div>
       </div>
       {/* Bottom Toolbar */}
@@ -468,6 +505,12 @@ export default function Home() {
         vibrateForm={vibrateForm}
         setVibrateForm={setVibrateForm}
         handleSaveSettingsClick={handleSaveSettingsClick}
+      />
+      <HintModal
+        open={showHintModal}
+        onOpenChange={setShowHintModal}
+        onChooseOperation={handleHintShowOperation}
+        onChoosePair={handleHintShowPair}
       />
       <Toaster
         position="top-center"
