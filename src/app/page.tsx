@@ -23,6 +23,7 @@ const AUTOCOMPLETE_KEY = "game-autocomplete";
 const RANDOM_PROB_KEY = "game-random-prob";
 const VIBRATE_KEY = "game-vibrate";
 const GAME_STATE_KEY = "game-state";
+const TOTAL_SOLVED_KEY = "game-total-solved";
 
 type SerializedGameNum = string | null;
 type SerializedGameState = {
@@ -30,6 +31,9 @@ type SerializedGameState = {
   gameHistory: SerializedGameNum[][];
   solveSteps: string[];
   tempPuzzleDifficulty: number | null;
+  // True once this specific puzzle has incremented the lifetime counter,
+  // so undo/redo/relaunch doesn't double-count.
+  puzzleCounted?: boolean;
 };
 
 const serializeNums = (nums: GameNum[]): SerializedGameNum[] =>
@@ -59,6 +63,8 @@ export default function Home() {
   const [autocomplete, setAutocomplete] = useState<boolean>(true);
   const [randomProb, setRandomProb] = useState<number>(0.2);
   const [vibrateEnabled, setVibrateEnabled] = useState<boolean>(true);
+  const [totalSolved, setTotalSolved] = useState<number>(0);
+  const [puzzleCounted, setPuzzleCounted] = useState<boolean>(false);
   // Settings form
   const [difficultyForm, setDifficultyForm] = useState<number>(1);
   const [autocompleteForm, setAutocompleteForm] = useState<boolean>(true);
@@ -127,6 +133,11 @@ export default function Home() {
       if (storedVibrate !== null) {
         setVibrateEnabled(storedVibrate === "true");
       }
+      const storedTotalSolved = localStorage.getItem(TOTAL_SOLVED_KEY);
+      if (storedTotalSolved !== null) {
+        const parsed = parseInt(storedTotalSolved, 10);
+        if (!Number.isNaN(parsed)) setTotalSolved(parsed);
+      }
 
       const storedGameState = localStorage.getItem(GAME_STATE_KEY);
       if (storedGameState !== null) {
@@ -136,6 +147,7 @@ export default function Home() {
           setGameHistory(parsed.gameHistory.map(deserializeNums));
           setSolveSteps(parsed.solveSteps);
           setTempPuzzleDifficulty(parsed.tempPuzzleDifficulty);
+          setPuzzleCounted(parsed.puzzleCounted === true);
           restoredFromStorage.current = true;
         } catch {
           // corrupt entry — fall back to the normal fresh-puzzle flow
@@ -163,6 +175,7 @@ export default function Home() {
     setGameHistory([gameNums]);
     setHintPair(null);
     setHintOpIdx(null);
+    setPuzzleCounted(false);
   }, [difficulty, puzzleIdxs, puzzles, loading, tempPuzzleDifficulty]);
 
   // Persist current game state so the same puzzle (and any in-progress work)
@@ -174,17 +187,39 @@ export default function Home() {
       gameHistory: gameHistory.map(serializeNums),
       solveSteps,
       tempPuzzleDifficulty,
+      puzzleCounted,
     };
     localStorage.setItem(GAME_STATE_KEY, JSON.stringify(payload));
-  }, [gameNums, gameHistory, solveSteps, tempPuzzleDifficulty, loading]);
+  }, [
+    gameNums,
+    gameHistory,
+    solveSteps,
+    tempPuzzleDifficulty,
+    puzzleCounted,
+    loading,
+  ]);
+
+  // Persist the lifetime solved counter independently.
+  useEffect(() => {
+    if (loading) return;
+    localStorage.setItem(TOTAL_SOLVED_KEY, String(totalSolved));
+  }, [totalSolved, loading]);
 
   // Check if solved
   useEffect(() => {
+    const markSolved = () => {
+      setShowSolvedModal(true);
+      if (!puzzleCounted) {
+        setPuzzleCounted(true);
+        setTotalSolved((prev) => prev + 1);
+      }
+    };
+
     if (
       gameNums.filter((num) => num !== null).length === 1 &&
       gameNums.some((num) => num?.valueOf() === 24)
     ) {
-      setShowSolvedModal(true);
+      markSolved();
       // Autocomplete last step
     } else if (
       autocomplete &&
@@ -197,10 +232,10 @@ export default function Home() {
       const soln = gameUtils.checkLastTwoNums(num1, num2);
       if (soln) {
         setSolveSteps((prevSteps) => [...prevSteps, soln]);
-        setShowSolvedModal(true);
+        markSolved();
       }
     }
-  }, [autocomplete, gameNums]);
+  }, [autocomplete, gameNums, puzzleCounted]);
 
   const handleOutsideClick = () => {
     setSelectedNumIdx(null);
@@ -385,7 +420,9 @@ export default function Home() {
         className="flex items-center justify-between pt-4 px-4"
         onClick={handleOpenSettingsModal}
       >
-        <div className="w-12" />
+        <div className="w-12 flex items-center justify-start text-xl font-medium tabular-nums">
+          {loading ? "" : totalSolved}
+        </div>
         <h1 className="text-2xl font-medium flex-grow text-center">
           {loading ? "" : difficulties[difficulty]}
         </h1>
