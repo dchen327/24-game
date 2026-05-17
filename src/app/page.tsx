@@ -24,6 +24,16 @@ const RANDOM_PROB_KEY = "game-random-prob";
 const VIBRATE_KEY = "game-vibrate";
 const GAME_STATE_KEY = "game-state";
 const TOTAL_SOLVED_KEY = "game-total-solved";
+const FLAT_MODE_KEY = "game-flat-mode";
+
+// Per-tile text rotations for flat / multiplayer mode. Each digit faces its
+// own corner viewer (clockwise from top-left).
+const FLAT_TILE_ROTATIONS = [
+  "-rotate-45", // top-left tile -> top-left viewer
+  "rotate-45", // top-right tile -> top-right viewer
+  "-rotate-[135deg]", // bottom-left tile -> bottom-left viewer
+  "rotate-[135deg]", // bottom-right tile -> bottom-right viewer
+];
 
 type SerializedGameNum = string | null;
 type SerializedGameState = {
@@ -65,11 +75,13 @@ export default function Home() {
   const [vibrateEnabled, setVibrateEnabled] = useState<boolean>(true);
   const [totalSolved, setTotalSolved] = useState<number>(0);
   const [puzzleCounted, setPuzzleCounted] = useState<boolean>(false);
+  const [flatMode, setFlatMode] = useState<boolean>(false);
   // Settings form
   const [difficultyForm, setDifficultyForm] = useState<number>(1);
   const [autocompleteForm, setAutocompleteForm] = useState<boolean>(true);
   const [randomProbForm, setRandomProbForm] = useState<number[]>([0.2]);
   const [vibrateForm, setVibrateForm] = useState<boolean>(true);
+  const [flatModeForm, setFlatModeForm] = useState<boolean>(false);
 
   const vibrate = () => {
     if (vibrateEnabled) gameUtils.vibrate();
@@ -97,7 +109,7 @@ export default function Home() {
     const aIdx = gameNums.findIndex((n) => n !== null && n.equals(valA));
     if (aIdx === -1) return null;
     const bIdx = gameNums.findIndex(
-      (n, i) => i !== aIdx && n !== null && n.equals(valB)
+      (n, i) => i !== aIdx && n !== null && n.equals(valB),
     );
     if (bIdx === -1) return null;
     return [aIdx, bIdx];
@@ -110,9 +122,9 @@ export default function Home() {
       const puzzles = puzzlesImport.map((puzzleSet) =>
         gameUtils.shuffle(
           puzzleSet.map((puzzle) =>
-            puzzle.split(" ").map((num) => new Fraction(num))
-          )
-        )
+            puzzle.split(" ").map((num) => new Fraction(num)),
+          ),
+        ),
       );
       setPuzzles(puzzles);
 
@@ -137,6 +149,10 @@ export default function Home() {
       if (storedTotalSolved !== null) {
         const parsed = parseInt(storedTotalSolved, 10);
         if (!Number.isNaN(parsed)) setTotalSolved(parsed);
+      }
+      const storedFlatMode = localStorage.getItem(FLAT_MODE_KEY);
+      if (storedFlatMode !== null) {
+        setFlatMode(storedFlatMode === "true");
       }
 
       const storedGameState = localStorage.getItem(GAME_STATE_KEY);
@@ -169,7 +185,7 @@ export default function Home() {
     }
     const currDifficulty = tempPuzzleDifficulty ?? difficulty;
     const gameNums = gameUtils.shuffle(
-      puzzles[currDifficulty][puzzleIdxs[currDifficulty]]
+      puzzles[currDifficulty][puzzleIdxs[currDifficulty]],
     );
     setGameNums(gameNums);
     setGameHistory([gameNums]);
@@ -375,6 +391,7 @@ export default function Home() {
     setAutocompleteForm(autocomplete);
     setRandomProbForm([randomProb]);
     setVibrateForm(vibrateEnabled);
+    setFlatModeForm(flatMode);
     setShowSettingsModal(true);
   };
 
@@ -383,10 +400,12 @@ export default function Home() {
     setAutocomplete(autocompleteForm);
     setRandomProb(randomProbForm[0]);
     setVibrateEnabled(vibrateForm);
+    setFlatMode(flatModeForm);
     localStorage.setItem(DIFFICULTY_KEY, difficultyForm.toString());
     localStorage.setItem(AUTOCOMPLETE_KEY, autocompleteForm.toString());
     localStorage.setItem(RANDOM_PROB_KEY, randomProbForm[0].toString());
     localStorage.setItem(VIBRATE_KEY, vibrateForm.toString());
+    localStorage.setItem(FLAT_MODE_KEY, flatModeForm.toString());
     setShowSettingsModal(false);
   };
 
@@ -400,7 +419,7 @@ export default function Home() {
       return (
         arr1.length === arr2.length &&
         arr1.every(
-          (num, index) => num?.toFraction() === arr2[index]?.toFraction()
+          (num, index) => num?.toFraction() === arr2[index]?.toFraction(),
         )
       );
     };
@@ -433,9 +452,18 @@ export default function Home() {
       {/* Game Grid */}
       <div className="flex-1 flex flex-col items-center justify-center">
         <div
-          className="grid grid-cols-2 gap-4 w-full max-w-md px-4 mx-4 "
+          className="relative grid grid-cols-2 gap-4 w-full max-w-md px-4 mx-4 "
           onClick={(e) => e.stopPropagation()}
         >
+          {flatMode && (
+            <>
+              {/* Center diamond - each edge sits under one digit as a baseline */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 w-1/4 aspect-square bg-white border-[2px] border-gray-300 rounded-md shadow-sm"
+              />
+            </>
+          )}
           {gameNums.map((num, index) => {
             const isSelected =
               selectededNumIdx === index && gameNums[index] !== null;
@@ -450,12 +478,18 @@ export default function Home() {
                   isSelected
                     ? "bg-blue-100 border-2 border-gray-600"
                     : isHinted
-                    ? "bg-yellow-100 border-2 border-yellow-400"
-                    : "bg-gray-100"
+                      ? "bg-yellow-100 border-2 border-yellow-400"
+                      : "bg-gray-100"
                 }`}
                 onClick={() => handleNumClick(index)}
               >
-                {num?.toFraction()}
+                <span
+                  className={
+                    flatMode ? `inline-block ${FLAT_TILE_ROTATIONS[index]}` : ""
+                  }
+                >
+                  {num?.toFraction()}
+                </span>
               </button>
             );
           })}
@@ -476,8 +510,8 @@ export default function Home() {
                   isOpSelected
                     ? "after:absolute after:w-16 after:h-16 after:border-2 after:border-gray-600 after:rounded-full"
                     : isOpHinted
-                    ? "after:absolute after:w-16 after:h-16 after:border-2 after:border-yellow-400 after:rounded-full"
-                    : ""
+                      ? "after:absolute after:w-16 after:h-16 after:border-2 after:border-yellow-400 after:rounded-full"
+                      : ""
                 }`}
                 onClick={() => handleOpClick(index)}
               >
@@ -541,6 +575,8 @@ export default function Home() {
         setRandomProbForm={setRandomProbForm}
         vibrateForm={vibrateForm}
         setVibrateForm={setVibrateForm}
+        flatModeForm={flatModeForm}
+        setFlatModeForm={setFlatModeForm}
         handleSaveSettingsClick={handleSaveSettingsClick}
       />
       <HintModal

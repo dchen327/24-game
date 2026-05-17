@@ -34,6 +34,8 @@ type SettingsModalProps = {
   setRandomProbForm: (value: number[]) => void;
   vibrateForm: boolean;
   setVibrateForm: (value: boolean) => void;
+  flatModeForm: boolean;
+  setFlatModeForm: (value: boolean) => void;
   handleSaveSettingsClick: () => void;
 };
 
@@ -48,6 +50,8 @@ export function SettingsModal({
   setRandomProbForm,
   vibrateForm,
   setVibrateForm,
+  flatModeForm,
+  setFlatModeForm,
   handleSaveSettingsClick,
 }: SettingsModalProps) {
   return (
@@ -151,6 +155,34 @@ export function SettingsModal({
                 checked={vibrateForm}
                 onCheckedChange={setVibrateForm}
                 aria-label="Toggle vibration"
+                className="scale-125"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-3 items-center gap-4">
+            <Label
+              htmlFor="flatMode"
+              className="col-span-2 font-semibold text-xl"
+            >
+              Flat mode:
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <InfoIcon className="h-5 w-5" />
+                    <span className="sr-only">Flat Mode Info</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full border border-black p-2">
+                  <p>Rotate each digit to face its corner viewer</p>
+                </PopoverContent>
+              </Popover>
+            </Label>
+            <div className="flex justify-end">
+              <Checkbox
+                id="flatMode"
+                checked={flatModeForm}
+                onCheckedChange={setFlatModeForm}
+                aria-label="Toggle flat mode"
                 className="scale-125"
               />
             </div>
