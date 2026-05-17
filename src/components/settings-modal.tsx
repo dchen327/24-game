@@ -36,6 +36,8 @@ type SettingsModalProps = {
   setVibrateForm: (value: boolean) => void;
   tabletopModeForm: boolean;
   setTabletopModeForm: (value: boolean) => void;
+  darkModeForm: boolean;
+  setDarkModeForm: (value: boolean) => void;
   handleSaveSettingsClick: () => void;
 };
 
@@ -52,6 +54,8 @@ export function SettingsModal({
   setVibrateForm,
   tabletopModeForm,
   setTabletopModeForm,
+  darkModeForm,
+  setDarkModeForm,
   handleSaveSettingsClick,
 }: SettingsModalProps) {
   return (
@@ -99,7 +103,7 @@ export function SettingsModal({
                     <span className="sr-only">Autocomplete Info</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-full border border-black p-2">
+                <PopoverContent className="w-full border border-border p-2">
                   <p>Autocomplete last step</p>
                 </PopoverContent>
               </Popover>
@@ -125,7 +129,7 @@ export function SettingsModal({
                       <span className="sr-only">Random Probability Info</span>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-full border border-black p-2">
+                  <PopoverContent className="w-full border border-border p-2">
                     <p>Probability of getting an easier problem</p>
                   </PopoverContent>
                 </Popover>
@@ -161,6 +165,23 @@ export function SettingsModal({
           </div>
           <div className="grid grid-cols-3 items-center gap-4">
             <Label
+              htmlFor="darkMode"
+              className="col-span-2 font-semibold text-xl"
+            >
+              Dark mode:
+            </Label>
+            <div className="flex justify-end">
+              <Checkbox
+                id="darkMode"
+                checked={darkModeForm}
+                onCheckedChange={setDarkModeForm}
+                aria-label="Toggle dark mode"
+                className="scale-125"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-3 items-center gap-4">
+            <Label
               htmlFor="tabletopMode"
               className="col-span-2 font-semibold text-xl"
             >
@@ -172,7 +193,7 @@ export function SettingsModal({
                     <span className="sr-only">Tabletop Mode Info</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-full border border-black p-2">
+                <PopoverContent className="w-full border border-border p-2">
                   <p>
                     Numbers are rotated to enable viewing from all sides
                   </p>

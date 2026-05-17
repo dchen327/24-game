@@ -49,6 +49,15 @@ export default {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
+  			},
+  			game: {
+  				tile: 'hsl(var(--game-tile))',
+  				'tile-selected': 'hsl(var(--game-tile-selected))',
+  				'tile-hint': 'hsl(var(--game-tile-hint))',
+  				toolbar: 'hsl(var(--game-toolbar))',
+  				'tabletop-center': 'hsl(var(--game-tabletop-center))',
+  				'tile-border': 'hsl(var(--game-tile-border))',
+  				'tile-hint-border': 'hsl(var(--game-tile-hint-border))',
   			}
   		},
   		borderRadius: {

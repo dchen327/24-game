@@ -66,7 +66,7 @@ export function SolvedModal({
             {gameHistory[0]?.map((num, index) => (
               <button
                 key={index}
-                className="aspect-square rounded-2xl flex items-center justify-center text-3xl sm:text-5xl font-medium bg-gray-100"
+                className="aspect-square rounded-2xl flex items-center justify-center text-3xl sm:text-5xl font-medium bg-game-tile"
               >
                 {num?.valueOf()}
               </button>
@@ -78,11 +78,11 @@ export function SolvedModal({
             const { A, op, B, C } = parseEquation(step);
             return (
               <div key={idx} className="grid grid-cols-5 items-center">
-                <div className="bg-gray-100 rounded p-2 text-center">{A}</div>
+                <div className="bg-game-tile rounded p-2 text-center">{A}</div>
                 <div className="text-center p-2">{op}</div>
-                <div className="bg-gray-100 rounded p-2 text-center">{B}</div>
+                <div className="bg-game-tile rounded p-2 text-center">{B}</div>
                 <div className="text-center p-2">=</div>
-                <div className="bg-gray-100 rounded p-2 text-center">{C}</div>
+                <div className="bg-game-tile rounded p-2 text-center">{C}</div>
               </div>
             );
           })}

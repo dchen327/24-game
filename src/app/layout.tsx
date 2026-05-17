@@ -43,7 +43,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FFFFFF",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#36393f" },
+  ],
 };
 
 export default function RootLayout({
@@ -52,8 +55,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr">
-      <head />
+    <html lang="en" dir="ltr" suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#ffffff" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var d=localStorage.getItem("game-dark-mode");if(d==="true"){document.documentElement.classList.add("dark");var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content","#36393f");}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

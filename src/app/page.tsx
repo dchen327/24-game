@@ -17,6 +17,7 @@ import { GameNum } from "@/types/game-types";
 import { SolvedModal } from "@/components/solved-modal";
 import { HintModal } from "@/components/hint-modal";
 import { gameUtils, SolveStep } from "@/components/game-utils";
+import { applyDarkMode, DARK_MODE_KEY } from "@/lib/theme";
 
 const DIFFICULTY_KEY = "game-difficulty";
 const AUTOCOMPLETE_KEY = "game-autocomplete";
@@ -76,12 +77,14 @@ export default function Home() {
   const [totalSolved, setTotalSolved] = useState<number>(0);
   const [puzzleCounted, setPuzzleCounted] = useState<boolean>(false);
   const [tabletopMode, setTabletopMode] = useState<boolean>(false);
+  const [darkMode, setDarkMode] = useState<boolean>(false);
   // Settings form
   const [difficultyForm, setDifficultyForm] = useState<number>(1);
   const [autocompleteForm, setAutocompleteForm] = useState<boolean>(true);
   const [randomProbForm, setRandomProbForm] = useState<number[]>([0.2]);
   const [vibrateForm, setVibrateForm] = useState<boolean>(true);
   const [tabletopModeForm, setTabletopModeForm] = useState<boolean>(false);
+  const [darkModeForm, setDarkModeForm] = useState<boolean>(false);
 
   const vibrate = () => {
     if (vibrateEnabled) gameUtils.vibrate();
@@ -161,6 +164,12 @@ export default function Home() {
       if (storedTabletopMode !== null) {
         setTabletopMode(storedTabletopMode === "true");
       }
+      const storedDarkMode = localStorage.getItem(DARK_MODE_KEY);
+      if (storedDarkMode !== null) {
+        const enabled = storedDarkMode === "true";
+        setDarkMode(enabled);
+        applyDarkMode(enabled);
+      }
 
       const storedGameState = localStorage.getItem(GAME_STATE_KEY);
       if (storedGameState !== null) {
@@ -228,14 +237,23 @@ export default function Home() {
     localStorage.setItem(TOTAL_SOLVED_KEY, String(totalSolved));
   }, [totalSolved, loading]);
 
+  useEffect(() => {
+    if (loading) return;
+    applyDarkMode(darkMode);
+    localStorage.setItem(DARK_MODE_KEY, String(darkMode));
+  }, [darkMode, loading]);
+
   // Check if solved
   useEffect(() => {
+    // Once a puzzle is counted as solved, bail out so that the puzzleCounted
+    // state flip (which is in this effect's deps) doesn't re-fire the
+    // autocomplete branch and duplicate the final solve step.
+    if (puzzleCounted) return;
+
     const markSolved = () => {
       setShowSolvedModal(true);
-      if (!puzzleCounted) {
-        setPuzzleCounted(true);
-        setTotalSolved((prev) => prev + 1);
-      }
+      setPuzzleCounted(true);
+      setTotalSolved((prev) => prev + 1);
     };
 
     if (
@@ -399,6 +417,7 @@ export default function Home() {
     setRandomProbForm([randomProb]);
     setVibrateForm(vibrateEnabled);
     setTabletopModeForm(tabletopMode);
+    setDarkModeForm(darkMode);
     setShowSettingsModal(true);
   };
 
@@ -408,6 +427,7 @@ export default function Home() {
     setRandomProb(randomProbForm[0]);
     setVibrateEnabled(vibrateForm);
     setTabletopMode(tabletopModeForm);
+    setDarkMode(darkModeForm);
     localStorage.setItem(DIFFICULTY_KEY, difficultyForm.toString());
     localStorage.setItem(AUTOCOMPLETE_KEY, autocompleteForm.toString());
     localStorage.setItem(RANDOM_PROB_KEY, randomProbForm[0].toString());
@@ -440,7 +460,10 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-svh bg-white" onClick={handleOutsideClick}>
+    <div
+      className="flex flex-col h-svh bg-background text-foreground"
+      onClick={handleOutsideClick}
+    >
       {/* Header */}
       <div
         className="flex items-center justify-between pt-4 px-4"
@@ -467,7 +490,7 @@ export default function Home() {
               {/* Center diamond - each edge sits under one digit as a baseline */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 w-1/4 aspect-square bg-white border-[2px] border-gray-300 rounded-md shadow-sm"
+                className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 w-1/4 aspect-square bg-game-tabletop-center border-[2px] border-border rounded-md shadow-sm"
               />
             </>
           )}
@@ -483,10 +506,10 @@ export default function Home() {
                 key={index}
                 className={`aspect-square rounded-2xl flex items-center justify-center text-7xl font-medium ${
                   isSelected
-                    ? "bg-blue-100 border-2 border-gray-600"
+                    ? "bg-game-tile-selected border-2 border-game-tile-border"
                     : isHinted
-                      ? "bg-yellow-100 border-2 border-yellow-400"
-                      : "bg-gray-100"
+                      ? "bg-game-tile-hint border-2 border-game-tile-hint-border"
+                      : "bg-game-tile"
                 }`}
                 onClick={() => handleNumClick(index)}
               >
@@ -517,9 +540,9 @@ export default function Home() {
                 key={index}
                 className={`text-5xl pb-12 pt-16 px-10 flex items-center justify-center max-w-28 max-h-28 ${
                   isOpSelected
-                    ? "after:absolute after:w-16 after:h-16 after:border-2 after:border-gray-600 after:rounded-full"
+                    ? "after:absolute after:w-16 after:h-16 after:border-2 after:border-game-tile-border after:rounded-full"
                     : isOpHinted
-                      ? "after:absolute after:w-16 after:h-16 after:border-2 after:border-yellow-400 after:rounded-full"
+                      ? "after:absolute after:w-16 after:h-16 after:border-2 after:border-game-tile-hint-border after:rounded-full"
                       : ""
                 }`}
                 onClick={() => handleOpClick(index)}
@@ -532,7 +555,7 @@ export default function Home() {
       </div>
       {/* Bottom Toolbar */}
       <div className="w-full">
-        <div className="max-w-md mx-auto py-4 bg-gray-50 rounded-xl">
+        <div className="max-w-md mx-auto py-4 bg-game-toolbar rounded-xl">
           <div className="flex justify-around items-center">
             <button
               className="flex flex-col items-center gap-1"
@@ -586,6 +609,8 @@ export default function Home() {
         setVibrateForm={setVibrateForm}
         tabletopModeForm={tabletopModeForm}
         setTabletopModeForm={setTabletopModeForm}
+        darkModeForm={darkModeForm}
+        setDarkModeForm={setDarkModeForm}
         handleSaveSettingsClick={handleSaveSettingsClick}
       />
       <HintModal
@@ -596,7 +621,12 @@ export default function Home() {
       />
       <Toaster
         position="top-center"
-        toastOptions={{ duration: 2500, style: { fontSize: "1rem" } }}
+        toastOptions={{
+          duration: 2500,
+          className:
+            "!bg-popover !text-popover-foreground !border !border-border",
+          style: { fontSize: "1rem" },
+        }}
       />
     </div>
   );
