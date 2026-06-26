@@ -11,14 +11,12 @@ declare global {
 declare const self: ServiceWorkerGlobalScope;
 
 const serwist = new Serwist({
-  precacheEntries: [
-    ...(self.__SW_MANIFEST ?? []),
-    // The "/" route is server-rendered HTML by default and is never picked up
-    // by Serwist's webpack plugin. Force it into the precache so cold offline
-    // launches (e.g. opening the installed PWA in airplane mode without ever
-    // having reloaded once online) actually load the shell.
-    { url: "/", revision: null },
-  ],
+  // __SW_MANIFEST contains every hashed /_next/static asset plus the "/" shell
+  // (injected via `additionalPrecacheEntries` in next.config.ts, each with a
+  // real per-build revision). Spreading it directly — instead of appending a
+  // hardcoded `{ url: "/", revision: null }` — ensures the shell rotates with
+  // the chunks it references and never goes stale.
+  precacheEntries: self.__SW_MANIFEST ?? [],
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
